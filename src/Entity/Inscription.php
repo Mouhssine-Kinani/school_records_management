@@ -16,11 +16,11 @@ class Inscription
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'inscriptions')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $eleve = null;
 
-    #[ORM\ManyToOne(inversedBy: 'inscriptions')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?Classe $classe = null;
 

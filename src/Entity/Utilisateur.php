@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\UtilisateurRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -67,37 +65,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $dateModification = null;
 
-    /**
-     * @var Collection<int, EnseignantMatiereClasse>
-     */
-    #[ORM\OneToMany(targetEntity: EnseignantMatiereClasse::class, mappedBy: 'ensignant')]
-    private Collection $enseignantMatiereClasses;
-
-    /**
-     * @var Collection<int, Inscription>
-     */
-    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'eleve')]
-    private Collection $inscriptions;
-
-    /**
-     * @var Collection<int, Note>
-     */
-    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'eleve')]
-    private Collection $notes;
-
-    /**
-     * @var Collection<int, EleveParent>
-     */
-    #[ORM\OneToMany(targetEntity: EleveParent::class, mappedBy: 'eleve')]
-    private Collection $eleveParents;
-
-    public function __construct()
-    {
-        $this->enseignantMatiereClasses = new ArrayCollection();
-        $this->inscriptions = new ArrayCollection();
-        $this->notes = new ArrayCollection();
-        $this->eleveParents = new ArrayCollection();
-    }
+    public function __construct() {}
 
     public function getId(): ?int
     {
@@ -265,125 +233,5 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDateModificationValue(): void
     {
         $this->dateModification = new \DateTimeImmutable();
-    }
-
-    /**
-     * @return Collection<int, EnseignantMatiereClasse>
-     */
-    public function getEnseignantMatiereClasses(): Collection
-    {
-        return $this->enseignantMatiereClasses;
-    }
-
-    public function addEnseignantMatiereClass(EnseignantMatiereClasse $enseignantMatiereClass): static
-    {
-        if (!$this->enseignantMatiereClasses->contains($enseignantMatiereClass)) {
-            $this->enseignantMatiereClasses->add($enseignantMatiereClass);
-            $enseignantMatiereClass->setEnseignant($this);
-        }
-
-        return $this;
-    }
-
-    public function removeEnseignantMatiereClass(EnseignantMatiereClasse $enseignantMatiereClass): static
-    {
-        if ($this->enseignantMatiereClasses->removeElement($enseignantMatiereClass)) {
-            // set the owning side to null (unless already changed)
-            if ($enseignantMatiereClass->getEnseignant() === $this) {
-                $enseignantMatiereClass->setEnseignant(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Inscription>
-     */
-    public function getInscriptions(): Collection
-    {
-        return $this->inscriptions;
-    }
-
-    public function addInscription(Inscription $inscription): static
-    {
-        if (!$this->inscriptions->contains($inscription)) {
-            $this->inscriptions->add($inscription);
-            $inscription->setEleve($this);
-        }
-
-        return $this;
-    }
-
-    public function removeInscription(Inscription $inscription): static
-    {
-        if ($this->inscriptions->removeElement($inscription)) {
-            // set the owning side to null (unless already changed)
-            if ($inscription->getEleve() === $this) {
-                $inscription->setEleve(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Note>
-     */
-    public function getNotes(): Collection
-    {
-        return $this->notes;
-    }
-
-    public function addNote(Note $note): static
-    {
-        if (!$this->notes->contains($note)) {
-            $this->notes->add($note);
-            $note->setEleve($this);
-        }
-
-        return $this;
-    }
-
-    public function removeNote(Note $note): static
-    {
-        if ($this->notes->removeElement($note)) {
-            // set the owning side to null (unless already changed)
-            if ($note->getEleve() === $this) {
-                $note->setEleve(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, EleveParent>
-     */
-    public function getEleveParents(): Collection
-    {
-        return $this->eleveParents;
-    }
-
-    public function addEleveParent(EleveParent $eleveParent): static
-    {
-        if (!$this->eleveParents->contains($eleveParent)) {
-            $this->eleveParents->add($eleveParent);
-            $eleveParent->setEleve($this);
-        }
-
-        return $this;
-    }
-
-    public function removeEleveParent(EleveParent $eleveParent): static
-    {
-        if ($this->eleveParents->removeElement($eleveParent)) {
-            // set the owning side to null (unless already changed)
-            if ($eleveParent->getEleve() === $this) {
-                $eleveParent->setEleve(null);
-            }
-        }
-
-        return $this;
     }
 }

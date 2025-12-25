@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ClasseRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClasseRepository::class)]
@@ -24,23 +22,7 @@ class Classe
     #[ORM\Column(length: 20)]
     private ?string $anneeScolaire = null;
 
-    /**
-     * @var Collection<int, EnseignantMatiereClasse>
-     */
-    #[ORM\OneToMany(targetEntity: EnseignantMatiereClasse::class, mappedBy: 'classe')]
-    private Collection $enseignantMatiereClasses;
-
-    /**
-     * @var Collection<int, Inscription>
-     */
-    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'classe')]
-    private Collection $inscriptions;
-
-    public function __construct()
-    {
-        $this->enseignantMatiereClasses = new ArrayCollection();
-        $this->inscriptions = new ArrayCollection();
-    }
+    public function __construct() {}
 
     public function getId(): ?int
     {
@@ -79,66 +61,6 @@ class Classe
     public function setAnneeScolaire(string $anneeScolaire): static
     {
         $this->anneeScolaire = $anneeScolaire;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, EnseignantMatiereClasse>
-     */
-    public function getEnseignantMatiereClasses(): Collection
-    {
-        return $this->enseignantMatiereClasses;
-    }
-
-    public function addEnseignantMatiereClass(EnseignantMatiereClasse $enseignantMatiereClass): static
-    {
-        if (!$this->enseignantMatiereClasses->contains($enseignantMatiereClass)) {
-            $this->enseignantMatiereClasses->add($enseignantMatiereClass);
-            $enseignantMatiereClass->setClasse($this);
-        }
-
-        return $this;
-    }
-
-    public function removeEnseignantMatiereClass(EnseignantMatiereClasse $enseignantMatiereClass): static
-    {
-        if ($this->enseignantMatiereClasses->removeElement($enseignantMatiereClass)) {
-            // set the owning side to null (unless already changed)
-            if ($enseignantMatiereClass->getClasse() === $this) {
-                $enseignantMatiereClass->setClasse(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Inscription>
-     */
-    public function getInscriptions(): Collection
-    {
-        return $this->inscriptions;
-    }
-
-    public function addInscription(Inscription $inscription): static
-    {
-        if (!$this->inscriptions->contains($inscription)) {
-            $this->inscriptions->add($inscription);
-            $inscription->setClasse($this);
-        }
-
-        return $this;
-    }
-
-    public function removeInscription(Inscription $inscription): static
-    {
-        if ($this->inscriptions->removeElement($inscription)) {
-            // set the owning side to null (unless already changed)
-            if ($inscription->getClasse() === $this) {
-                $inscription->setClasse(null);
-            }
-        }
 
         return $this;
     }

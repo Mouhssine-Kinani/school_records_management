@@ -15,10 +15,10 @@ class EleveParent
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'eleveParents')]
+    #[ORM\ManyToOne]
     private ?Utilisateur $eleve = null;
 
-    #[ORM\ManyToOne(inversedBy: 'eleveParents')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $parent = null;
 
