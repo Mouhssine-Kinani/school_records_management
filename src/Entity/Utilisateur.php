@@ -114,7 +114,14 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         // Retourne un tableau avec le rôle de l'utilisateur
-        return [$this->role];
+        $role = $this->role;
+        if($role === "administrateur") return ["ROLE_ADMIN"];
+        if($role === "enseignant") return ["ROLE_ENSEIGNANT"];
+        if($role === "parent") return ["ROLE_PARENT"];
+        if($role === "eleve") return ["ROLE_ELEVE"];
+        
+        // Fallback pour tout rôle non reconnu
+        return ["ROLE_USER"];
     }
 
     public function getRole(): ?string
