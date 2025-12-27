@@ -18,9 +18,10 @@
             <!-- Menu -->
             <nav class="flex flex-col gap-2">
                 {% for item in menuItems %}
+                    {% set isActive = (activeMenu is defined and activeMenu == item.id) or (activeMenu is not defined and loop.first) %}
                     <a 
                         class="flex items-center gap-3 rounded-full px-4 py-3 transition-colors
-                            {% if currentRoute == item.route %}
+                            {% if isActive %}
                                 bg-primary text-background-dark shadow-lg shadow-primary/20
                             {% else %}
                                 text-slate-600 hover:bg-[#29382f] hover:text-white dark:text-[#9eb7a8]
@@ -28,7 +29,7 @@
                         href="{{ path(item.route) }}"
                     >
                         <span class="material-symbols-outlined text-[24px]">{{ item.icon }}</span>
-                        <span class="text-sm {% if currentRoute == item.route %}font-bold{% else %}font-medium{% endif %}">
+                        <span class="text-sm {% if isActive %}font-bold{% else %}font-medium{% endif %}">
                             {{ item.label }}
                         </span>
                     </a>

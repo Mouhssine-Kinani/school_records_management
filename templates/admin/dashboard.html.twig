@@ -7,12 +7,13 @@
     <!-- Sidebar Component -->
     {% include 'components/_sidebar.html.twig' with {
         'roleLabel': 'Admin Panel',
+        'activeMenu': 'dashboard',
         'menuItems': [
-            {'route': 'admin_dashboard', 'icon': 'dashboard', 'label': 'Tableau de bord'},
-            {'route': 'admin_dashboard', 'icon': 'school', 'label': 'Dossiers Élèves'},
-            {'route': 'admin_dashboard', 'icon': 'work', 'label': 'Enseignants'},
-            {'route': 'admin_dashboard', 'icon': 'domain', 'label': 'Classes'},
-            {'route': 'admin_dashboard', 'icon': 'bar_chart', 'label': 'Statistiques'}
+            {'id': 'dashboard', 'route': 'admin_dashboard', 'icon': 'dashboard', 'label': 'Tableau de bord'},
+            {'id': 'students', 'route': 'admin_dashboard', 'icon': 'school', 'label': 'Dossiers Élèves'},
+            {'id': 'teachers', 'route': 'admin_dashboard', 'icon': 'work', 'label': 'Enseignants'},
+            {'id': 'classes', 'route': 'admin_dashboard', 'icon': 'domain', 'label': 'Classes'},
+            {'id': 'stats', 'route': 'admin_dashboard', 'icon': 'bar_chart', 'label': 'Statistiques'}
         ]
     } %}
 
