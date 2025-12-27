@@ -41,4 +41,28 @@ class AdminController extends AbstractController
             'recentActivities' => $recentActivities,
         ]);
     }
+
+    #[Route('/classes', name: 'admin_classes')]
+    public function classes(ClasseRepository $classeRepo): Response
+    {
+        $classes = $classeRepo->getClassesWithDetails();
+        
+        // Define menu items for sidebar
+        $menuItems = [
+            ['id' => 'dashboard', 'label' => 'Tableau de bord', 'icon' => 'dashboard', 'route' => 'admin_dashboard'],
+            ['id' => 'students', 'label' => 'Étudiants', 'icon' => 'school', 'route' => 'admin_dashboard'],
+            ['id' => 'teachers', 'label' => 'Enseignants', 'icon' => 'person', 'route' => 'admin_dashboard'],
+            ['id' => 'classes', 'label' => 'Classes', 'icon' => 'meeting_room', 'route' => 'admin_classes'],
+            ['id' => 'schedule', 'label' => 'Emploi du temps', 'icon' => 'calendar_month', 'route' => 'admin_dashboard'],
+        ];
+
+        return $this->render('admin/classes.html.twig', [
+            'user' => $this->getUser(),
+            'classes' => $classes,
+            'menuItems' => $menuItems,
+            'activeMenu' => 'classes',
+            'roleLabel' => 'Admin Panel',
+            'pageTitle' => 'Gestion des Classes',
+        ]);
+    }
 }

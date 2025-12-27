@@ -16,28 +16,37 @@ class ClasseRepository extends ServiceEntityRepository
         parent::__construct($registry, Classe::class);
     }
 
-    //    /**
-    //     * @return Classe[] Returns an array of Classe objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Classe
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Get all classes with student count and principal teacher info
+     * @return array
+     */
+    public function getClassesWithDetails(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        
+        $sql = '
+            SELECT 
+                c.id,
+                c.nom,
+                c.niveau,
+                c.annee_scolaire,
+                COUNT(DISTINCT i.id) as student_count,
+                u.nom as teacher_nom,
+                u.prenom as teacher_prenom
+            FROM classe c
+            LEFT JOIN inscription i ON c.id = i.classe_id AND i.statut = :statut
+            LEFT JOIN enseignant_matiere_classe emc ON c.id = emc.classe_id
+            LEFT JOIN utilisateur u ON emc.enseignant_id = u.id AND u.role = :role
+            GROUP BY c.id, c.nom, c.niveau, c.annee_scolaire, u.nom, u.prenom
+            ORDER BY c.niveau ASC, c.nom ASC
+        ';
+        
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery([
+            'statut' => 'actif',
+            'role' => 'enseignant'
+        ]);
+        
+        return $result->fetchAllAssociative();
+    }
 }
