@@ -1,0 +1,51 @@
+{# Reusable Sidebar Component #}
+{% set currentRoute = app.request.attributes.get('_route') %}
+
+<aside class="hidden w-72 flex-col border-r border-[#29382f] bg-background-light dark:bg-background-dark lg:flex">
+    <div class="flex h-full flex-col justify-between p-6">
+        <div class="flex flex-col gap-8">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="flex size-12 items-center justify-center rounded-full bg-primary text-background-dark shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined text-[24px]">school</span>
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-lg font-bold leading-tight text-slate-900 dark:text-white">EduManage</h1>
+                    <p class="text-sm text-slate-500 dark:text-[#9eb7a8]">{{ roleLabel|default('Panel') }}</p>
+                </div>
+            </div>
+
+            <!-- Menu -->
+            <nav class="flex flex-col gap-2">
+                {% for item in menuItems %}
+                    <a 
+                        class="flex items-center gap-3 rounded-full px-4 py-3 transition-colors
+                            {% if currentRoute == item.route %}
+                                bg-primary text-background-dark shadow-lg shadow-primary/20
+                            {% else %}
+                                text-slate-600 hover:bg-[#29382f] hover:text-white dark:text-[#9eb7a8]
+                            {% endif %}"
+                        href="{{ path(item.route) }}"
+                    >
+                        <span class="material-symbols-outlined text-[24px]">{{ item.icon }}</span>
+                        <span class="text-sm {% if currentRoute == item.route %}font-bold{% else %}font-medium{% endif %}">
+                            {{ item.label }}
+                        </span>
+                    </a>
+                {% endfor %}
+            </nav>
+        </div>
+
+        <!-- Bottom Menu -->
+        <div class="flex flex-col gap-2">
+            <a class="flex items-center gap-3 rounded-full px-4 py-3 text-slate-600 transition-colors hover:bg-[#29382f] hover:text-white dark:text-[#9eb7a8]" href="#">
+                <span class="material-symbols-outlined text-[24px]">settings</span>
+                <span class="text-sm font-medium">Paramètres</span>
+            </a>
+            <a class="flex items-center gap-3 rounded-full px-4 py-3 text-red-400 transition-colors hover:bg-red-900/20" href="{{ path('app_logout') }}">
+                <span class="material-symbols-outlined text-[24px]">logout</span>
+                <span class="text-sm font-medium">Déconnexion</span>
+            </a>
+        </div>
+    </div>
+</aside>

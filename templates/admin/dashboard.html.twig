@@ -3,30 +3,192 @@
 {% block title %}Tableau de bord - Administrateur{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-background-light dark:bg-background-dark p-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="mb-8 flex justify-between items-center">
-            <div>
-                <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                    Tableau de bord Administrateur
-                </h1>
-                <p class="text-gray-600 dark:text-gray-400">
-                    Bienvenue, {{ user.prenom }} {{ user.nom }}
-                </p>
-            </div>
-            <a href="{{ path('app_logout') }}" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
-                Déconnexion
-            </a>
-        </div>
+<div class="flex h-screen w-full overflow-hidden">
+    <!-- Sidebar Component -->
+    {% include 'components/_sidebar.html.twig' with {
+        'roleLabel': 'Admin Panel',
+        'menuItems': [
+            {'route': 'admin_dashboard', 'icon': 'dashboard', 'label': 'Tableau de bord'},
+            {'route': 'admin_dashboard', 'icon': 'school', 'label': 'Dossiers Élèves'},
+            {'route': 'admin_dashboard', 'icon': 'work', 'label': 'Enseignants'},
+            {'route': 'admin_dashboard', 'icon': 'domain', 'label': 'Classes'},
+            {'route': 'admin_dashboard', 'icon': 'bar_chart', 'label': 'Statistiques'}
+        ]
+    } %}
 
-        <div class="bg-white dark:bg-surface-dark rounded-lg p-8 shadow-lg border border-gray-200 dark:border-surface-border">
-            <p class="text-gray-700 dark:text-gray-300">
-                Vous êtes connecté en tant qu'<strong>Administrateur</strong>.
-            </p>
-            <p class="mt-4 text-gray-600 dark:text-gray-400">
-                Email: {{ user.email }}
-            </p>
+    <!-- Main Content -->
+    <main class="flex flex-1 flex-col overflow-hidden bg-background-light dark:bg-background-dark">
+        <!-- Navbar Component -->
+        {% include 'components/_navbar.html.twig' with {
+            'pageTitle': 'Aperçu Général',
+            'user': app.user
+        } %}
+
+        <!-- Scrollable Page Content -->
+        <div class="flex-1 overflow-y-auto p-4 lg:p-10">
+            <div class="mx-auto flex max-w-[1200px] flex-col gap-8">
+                <!-- Page Heading -->
+                <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                    <div class="flex flex-col gap-1">
+                        <h1 class="text-3xl font-bold leading-tight text-slate-900 dark:text-white lg:text-4xl">
+                            Bienvenue, {{ app.user.prenom }} {{ app.user.nom }}
+                        </h1>
+                        <p class="text-base text-slate-500 dark:text-[#9eb7a8]">
+                            Voici les dernières statistiques de votre établissement.
+                        </p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-[#111714] transition-transform hover:scale-105">
+                            <span class="material-symbols-outlined text-[20px]">add</span>
+                            Nouvel Élève
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards Grid -->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <!-- Card 1: Students -->
+                    <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:bg-card-dark">
+                        <div class="mb-4 flex items-start justify-between">
+                            <div class="rounded-full bg-primary/20 p-3 text-primary">
+                                <span class="material-symbols-outlined">groups</span>
+                            </div>
+                            <span class="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-bold text-green-500">
+                                <span class="material-symbols-outlined text-[14px]">trending_up</span> +5%
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-[#9eb7a8]">Total Élèves</p>
+                            <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">{{ stats.totalEleves|default(0) }}</p>
+                        </div>
+                        <div class="absolute -right-6 -top-6 size-24 rounded-full bg-primary/5 transition-transform group-hover:scale-150"></div>
+                    </div>
+
+                    <!-- Card 2: Teachers -->
+                    <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:bg-card-dark">
+                        <div class="mb-4 flex items-start justify-between">
+                            <div class="rounded-full bg-blue-500/20 p-3 text-blue-500">
+                                <span class="material-symbols-outlined">assignment_ind</span>
+                            </div>
+                            <span class="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-bold text-green-500">
+                                <span class="material-symbols-outlined text-[14px]">trending_up</span> +2%
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-[#9eb7a8]">Enseignants</p>
+                            <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">{{ stats.totalEnseignants|default(0) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Classes -->
+                    <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:bg-card-dark">
+                        <div class="mb-4 flex items-start justify-between">
+                            <div class="rounded-full bg-orange-500/20 p-3 text-orange-500">
+                                <span class="material-symbols-outlined">meeting_room</span>
+                            </div>
+                            <span class="flex items-center gap-1 rounded-full bg-slate-500/10 px-2 py-1 text-xs font-bold text-slate-500 dark:text-[#9eb7a8]">
+                                0%
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-[#9eb7a8]">Classes Actives</p>
+                            <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">{{ stats.totalClasses|default(0) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Average -->
+                    <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:bg-card-dark">
+                        <div class="mb-4 flex items-start justify-between">
+                            <div class="rounded-full bg-purple-500/20 p-3 text-purple-500">
+                                <span class="material-symbols-outlined">grade</span>
+                            </div>
+                            <span class="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-bold text-green-500">
+                                <span class="material-symbols-outlined text-[14px]">trending_up</span> +1.2 pts
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-[#9eb7a8]">Moyenne Générale</p>
+                            <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-primary">
+                                {{ stats.moyenneGenerale|default(0)|number_format(1) }}<span class="text-lg text-slate-500 dark:text-[#9eb7a8]">/20</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Content Grid -->
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    <!-- Chart Section -->
+                    <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-card-dark lg:col-span-2">
+                        <div class="mb-6 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Performance Académique</h3>
+                                <p class="text-sm text-slate-500 dark:text-[#9eb7a8]">Évolution de la moyenne globale (Semestre 1)</p>
+                            </div>
+                            <select class="rounded-full border-none bg-slate-100 py-2 pl-4 pr-10 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary dark:bg-[#29382f] dark:text-white">
+                                <option>Ce Semestre</option>
+                                <option>Année Dernière</option>
+                            </select>
+                        </div>
+                        <!-- SVG Chart -->
+                        <div class="relative h-[250px] w-full">
+                            <svg class="h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 800 250">
+                                <defs>
+                                    <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stop-color="#38e07b" stop-opacity="0.3"></stop>
+                                        <stop offset="100%" stop-color="#38e07b" stop-opacity="0"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <!-- Grid Lines -->
+                                <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="200" y2="200"></line>
+                                <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="150" y2="150"></line>
+                                <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="100" y2="100"></line>
+                                <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="50" y2="50"></line>
+                                <!-- Chart Path -->
+                                <path d="M0,180 C100,170 150,120 200,130 C250,140 300,80 400,90 C500,100 550,60 600,50 C650,40 700,45 800,20 V250 H0 Z" fill="url(#chartGradient)"></path>
+                                <path d="M0,180 C100,170 150,120 200,130 C250,140 300,80 400,90 C500,100 550,60 600,50 C650,40 700,45 800,20" fill="none" stroke="#38e07b" stroke-linecap="round" stroke-width="3"></path>
+                                <!-- Data Points -->
+                                <circle cx="200" cy="130" fill="#122017" r="4" stroke="#38e07b" stroke-width="2"></circle>
+                                <circle cx="400" cy="90" fill="#122017" r="4" stroke="#38e07b" stroke-width="2"></circle>
+                                <circle cx="600" cy="50" fill="#122017" r="4" stroke="#38e07b" stroke-width="2"></circle>
+                            </svg>
+                        </div>
+                        <!-- X Axis Labels -->
+                        <div class="mt-4 flex justify-between px-2 text-sm font-medium text-slate-400 dark:text-[#9eb7a8]">
+                            <span>Sept</span>
+                            <span>Oct</span>
+                            <span>Nov</span>
+                            <span>Déc</span>
+                            <span>Jan</span>
+                            <span>Fév</span>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity List -->
+                    <div class="flex flex-col rounded-xl bg-white p-6 shadow-sm dark:bg-card-dark">
+                        <div class="mb-6 flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Activité Récente</h3>
+                            <a class="text-sm font-bold text-primary hover:underline" href="#">Voir tout</a>
+                        </div>
+                        <div class="flex flex-col gap-6">
+                            <!-- Activity items would be dynamically generated here -->
+                            <div class="flex gap-4">
+                                <div class="relative flex flex-col items-center">
+                                    <div class="z-10 flex size-10 items-center justify-center rounded-full bg-[#29382f] ring-4 ring-background-light dark:ring-card-dark">
+                                        <span class="material-symbols-outlined text-sm text-primary">edit_document</span>
+                                    </div>
+                                    <div class="absolute top-10 h-full w-0.5 bg-[#29382f]"></div>
+                                </div>
+                                <div class="flex flex-col pb-2">
+                                    <p class="text-sm font-medium text-slate-900 dark:text-white">Notes mises à jour</p>
+                                    <p class="text-xs text-slate-500 dark:text-[#9eb7a8]">Nouvelles notes ajoutées</p>
+                                    <span class="mt-1 text-xs font-bold text-slate-400 dark:text-[#5e7065]">Il y a 2h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
 </div>
 {% endblock %}

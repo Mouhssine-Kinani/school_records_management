@@ -1,0 +1,53 @@
+{# Reusable Navbar Component #}
+<header class="flex h-20 items-center justify-between border-b border-[#29382f] px-6 py-3 lg:px-10">
+    <!-- Mobile Menu Trigger -->
+    <button class="mr-4 text-slate-900 dark:text-white lg:hidden">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+
+    <!-- Page Title -->
+    <div class="hidden items-center gap-4 lg:flex">
+        <h2 class="text-xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">
+            {{ pageTitle|default('Tableau de bord') }}
+        </h2>
+    </div>
+
+    <!-- Search & Actions -->
+    <div class="flex flex-1 items-center justify-end gap-4 lg:gap-8">
+        <!-- Search Bar -->
+        <div class="hidden max-w-md flex-1 lg:block">
+            <div class="relative flex h-12 w-full items-center overflow-hidden rounded-full bg-white dark:bg-[#29382f]">
+                <div class="absolute left-4 flex items-center justify-center text-slate-400 dark:text-[#9eb7a8]">
+                    <span class="material-symbols-outlined">search</span>
+                </div>
+                <input 
+                    class="h-full w-full border-none bg-transparent pl-12 pr-4 text-base font-normal text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0 dark:text-white dark:placeholder-[#9eb7a8]" 
+                    placeholder="Rechercher un élève, une classe..." 
+                    type="text"
+                />
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+            <button class="relative flex size-10 items-center justify-center rounded-full bg-white text-slate-700 hover:bg-slate-100 dark:bg-[#29382f] dark:text-white dark:hover:bg-[#3d5245]">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="absolute right-2 top-2 size-2 rounded-full bg-primary"></span>
+            </button>
+            <button class="flex size-10 items-center justify-center rounded-full bg-white text-slate-700 hover:bg-slate-100 dark:bg-[#29382f] dark:text-white dark:hover:bg-[#3d5245]">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+        </div>
+
+        <!-- User Profile -->
+        <div class="flex items-center gap-3">
+            <div class="hidden flex-col items-end lg:flex">
+                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ user.prenom }} {{ user.nom }}</p>
+                <p class="text-xs text-slate-500 dark:text-[#9eb7a8]">{{ user.email }}</p>
+            </div>
+            <div class="flex size-10 items-center justify-center rounded-full bg-primary text-background-dark ring-2 ring-primary ring-offset-2 ring-offset-background-dark font-bold">
+                {{ user.prenom|first }}{{ user.nom|first }}
+            </div>
+        </div>
+    </div>
+</header>

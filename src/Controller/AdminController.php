@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Repository\UtilisateurRepository;
+use App\Repository\ClasseRepository;
+use App\Repository\NoteRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -12,10 +15,22 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminController extends AbstractController
 {
     #[Route('/dashboard', name: 'admin_dashboard')]
-    public function dashboard(): Response
-    {
+    public function dashboard(
+        UtilisateurRepository $utilisateurRepo,
+        ClasseRepository $classeRepo,
+        NoteRepository $noteRepo
+    ): Response {
+        // Fetch statistics from database
+        $stats = [
+            'totalEleves' => $utilisateurRepo->count(['role' => 'eleve']),
+            'totalEnseignants' => $utilisateurRepo->count(['role' => 'enseignant']),
+            'totalClasses' => $classeRepo->count([]),
+            'moyenneGenerale' => $noteRepo->getMoyenneGenerale() ?? 0,
+        ];
+
         return $this->render('admin/dashboard.html.twig', [
             'user' => $this->getUser(),
+            'stats' => $stats,
         ]);
     }
 }

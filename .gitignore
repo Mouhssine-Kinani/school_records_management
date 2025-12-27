@@ -9,7 +9,7 @@
 /vendor/
 .env
 ###< symfony/framework-bundle ###
-
+vendor/
 ###> phpunit/phpunit ###
 /phpunit.xml
 /.phpunit.cache/

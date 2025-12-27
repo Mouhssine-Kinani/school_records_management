@@ -16,6 +16,19 @@ class NoteRepository extends ServiceEntityRepository
         parent::__construct($registry, Note::class);
     }
 
+    /**
+     * Calculate the overall average grade from all notes
+     */
+    public function getMoyenneGenerale(): ?float
+    {
+        $result = $this->createQueryBuilder('n')
+            ->select('AVG(n.valeur) as moyenne')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result ? (float) $result : null;
+    }
+
     //    /**
     //     * @return Note[] Returns an array of Note objects
     //     */
