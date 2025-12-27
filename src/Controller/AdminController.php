@@ -28,9 +28,17 @@ class AdminController extends AbstractController
             'moyenneGenerale' => $noteRepo->getMoyenneGenerale() ?? 0,
         ];
 
+        // Fetch monthly averages for the chart
+        $monthlyAverages = $noteRepo->getMonthlyAverages();
+
+        // Fetch recent activities
+        $recentActivities = $noteRepo->getRecentActivities(10);
+
         return $this->render('admin/dashboard.html.twig', [
             'user' => $this->getUser(),
             'stats' => $stats,
+            'monthlyAverages' => $monthlyAverages,
+            'recentActivities' => $recentActivities,
         ]);
     }
 }

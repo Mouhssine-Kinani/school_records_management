@@ -129,38 +129,65 @@
                                 <option>Année Dernière</option>
                             </select>
                         </div>
-                        <!-- SVG Chart -->
-                        <div class="relative h-[250px] w-full">
-                            <svg class="h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 800 250">
-                                <defs>
-                                    <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stop-color="#38e07b" stop-opacity="0.3"></stop>
-                                        <stop offset="100%" stop-color="#38e07b" stop-opacity="0"></stop>
-                                    </linearGradient>
-                                </defs>
-                                <!-- Grid Lines -->
-                                <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="200" y2="200"></line>
-                                <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="150" y2="150"></line>
-                                <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="100" y2="100"></line>
-                                <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="50" y2="50"></line>
-                                <!-- Chart Path -->
-                                <path d="M0,180 C100,170 150,120 200,130 C250,140 300,80 400,90 C500,100 550,60 600,50 C650,40 700,45 800,20 V250 H0 Z" fill="url(#chartGradient)"></path>
-                                <path d="M0,180 C100,170 150,120 200,130 C250,140 300,80 400,90 C500,100 550,60 600,50 C650,40 700,45 800,20" fill="none" stroke="#38e07b" stroke-linecap="round" stroke-width="3"></path>
-                                <!-- Data Points -->
-                                <circle cx="200" cy="130" fill="#122017" r="4" stroke="#38e07b" stroke-width="2"></circle>
-                                <circle cx="400" cy="90" fill="#122017" r="4" stroke="#38e07b" stroke-width="2"></circle>
-                                <circle cx="600" cy="50" fill="#122017" r="4" stroke="#38e07b" stroke-width="2"></circle>
-                            </svg>
-                        </div>
-                        <!-- X Axis Labels -->
-                        <div class="mt-4 flex justify-between px-2 text-sm font-medium text-slate-400 dark:text-[#9eb7a8]">
-                            <span>Sept</span>
-                            <span>Oct</span>
-                            <span>Nov</span>
-                            <span>Déc</span>
-                            <span>Jan</span>
-                            <span>Fév</span>
-                        </div>
+                        <!-- Dynamic Chart -->
+                        {% if monthlyAverages|length > 0 %}
+                            <div class="relative h-[250px] w-full">
+                                <svg class="h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 800 250">
+                                    <defs>
+                                        <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                                            <stop offset="0%" stop-color="#38e07b" stop-opacity="0.3"></stop>
+                                            <stop offset="100%" stop-color="#38e07b" stop-opacity="0"></stop>
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Grid Lines -->
+                                    <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="200" y2="200"></line>
+                                    <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="150" y2="150"></line>
+                                    <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="100" y2="100"></line>
+                                    <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="50" y2="50"></line>
+                                    
+                                    {% set maxGrade = 20 %}
+                                    {% set chartWidth = 800 %}
+                                    {% set chartHeight = 250 %}
+                                    {% set numPoints = monthlyAverages|length %}
+                                    {% set spacing = chartWidth / (numPoints > 1 ? numPoints - 1 : 1) %}
+                                    
+                                    {# Build the path data #}
+                                    {% set pathData = 'M' %}
+                                    {% for data in monthlyAverages %}
+                                        {% set x = loop.index0 * spacing %}
+                                        {% set y = chartHeight - (data.average / maxGrade * chartHeight) %}
+                                        {% if loop.first %}
+                                            {% set pathData = pathData ~ x ~ ',' ~ y %}
+                                        {% else %}
+                                            {% set pathData = pathData ~ ' L' ~ x ~ ',' ~ y %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {# Area fill #}
+                                    <path d="{{ pathData }} V{{ chartHeight }} H0 Z" fill="url(#chartGradient)"></path>
+                                    
+                                    {# Line #}
+                                    <path d="{{ pathData }}" fill="none" stroke="#38e07b" stroke-linecap="round" stroke-width="3"></path>
+                                    
+                                    {# Data Points #}
+                                    {% for data in monthlyAverages %}
+                                        {% set x = loop.index0 * spacing %}
+                                        {% set y = chartHeight - (data.average / maxGrade * chartHeight) %}
+                                        <circle cx="{{ x }}" cy="{{ y }}" fill="#122017" r="4" stroke="#38e07b" stroke-width="2"></circle>
+                                    {% endfor %}
+                                </svg>
+                            </div>
+                            <!-- X Axis Labels (Dynamic) -->
+                            <div class="mt-4 flex justify-between px-2 text-sm font-medium text-slate-400 dark:text-[#9eb7a8]">
+                                {% for data in monthlyAverages %}
+                                    <span>{{ data.month }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="flex h-[250px] items-center justify-center">
+                                <p class="text-slate-500 dark:text-[#9eb7a8]">Aucune donnée disponible pour cette période</p>
+                            </div>
+                        {% endif %}
                     </div>
 
                     <!-- Recent Activity List -->
@@ -169,22 +196,39 @@
                             <h3 class="text-lg font-bold text-slate-900 dark:text-white">Activité Récente</h3>
                             <a class="text-sm font-bold text-primary hover:underline" href="#">Voir tout</a>
                         </div>
-                        <div class="flex flex-col gap-6">
-                            <!-- Activity items would be dynamically generated here -->
-                            <div class="flex gap-4">
-                                <div class="relative flex flex-col items-center">
-                                    <div class="z-10 flex size-10 items-center justify-center rounded-full bg-[#29382f] ring-4 ring-background-light dark:ring-card-dark">
-                                        <span class="material-symbols-outlined text-sm text-primary">edit_document</span>
+                        
+                        {% if recentActivities|length > 0 %}
+                            <!-- Scrollable container: shows 3 items, scroll for more -->
+                            <div class="flex flex-col gap-6 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                                {% for activity in recentActivities %}
+                                    <div class="flex gap-4">
+                                        <div class="relative flex flex-col items-center">
+                                            <div class="z-10 flex size-10 items-center justify-center rounded-full bg-[#29382f] ring-4 ring-background-light dark:ring-card-dark">
+                                                <span class="material-symbols-outlined text-sm text-primary">edit_document</span>
+                                            </div>
+                                            {% if not loop.last %}
+                                                <div class="absolute top-10 h-full w-0.5 bg-[#29382f]"></div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex flex-col pb-2">
+                                            <p class="text-sm font-medium text-slate-900 dark:text-white">Note ajoutée</p>
+                                            <p class="text-xs text-slate-500 dark:text-[#9eb7a8]">
+                                                {{ activity.enseignant.prenom }} {{ activity.enseignant.nom }} a ajouté une note 
+                                                à {{ activity.eleve.prenom }} {{ activity.eleve.nom }} 
+                                                en {{ activity.matiere.libelle }}
+                                            </p>
+                                            <span class="mt-1 text-xs font-bold text-slate-400 dark:text-[#5e7065]">
+                                                {{ activity.dateNote|time_ago }}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="absolute top-10 h-full w-0.5 bg-[#29382f]"></div>
-                                </div>
-                                <div class="flex flex-col pb-2">
-                                    <p class="text-sm font-medium text-slate-900 dark:text-white">Notes mises à jour</p>
-                                    <p class="text-xs text-slate-500 dark:text-[#9eb7a8]">Nouvelles notes ajoutées</p>
-                                    <span class="mt-1 text-xs font-bold text-slate-400 dark:text-[#5e7065]">Il y a 2h</span>
-                                </div>
+                                {% endfor %}
                             </div>
-                        </div>
+                        {% else %}
+                            <div class="flex h-32 items-center justify-center">
+                                <p class="text-slate-500 dark:text-[#9eb7a8]">Aucune activité récente</p>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
