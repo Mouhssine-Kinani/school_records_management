@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="relative min-h-screen w-full flex items-center justify-center p-4 bg-pattern">
+    <!-- Ambient Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+    
+    <!-- Main Layout Container -->
+    <div class="relative w-full max-w-[1200px] flex flex-col lg:flex-row rounded-lg overflow-hidden shadow-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-surface-border min-h-[600px]">
+        
+        <!-- Left Side: Visual / Brand -->
+        <div class="hidden lg:flex w-1/2 relative bg-gray-900 flex-col justify-between p-12">
+            <!-- Background Image -->
+            <div class="absolute inset-0 w-full h-full z-0">
+                <div class="w-full h-full bg-cover bg-center opacity-40 mix-blend-overlay" data-alt="Modern abstract library or school architecture with clean lines" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZzUcOdphfgeM3dXCFBmSwXXNnr60nYFrYUpEg_Z2ru_9rCyUWmad4dfxeTmjai2-rxNPLGfCEhRFMdiD_kh7-F0fvk6QIOFiggywTeU_JNahP3VpOIMMyjWBqbc6SReFw74i-hvFXxdSdR0whgMTWqNHz425UJu69l2tMZeE97kWiideR2RZnNq2hr-sKttK8kXyLyDlSHlWeiVdRZlNQoxL7l4e1vqfp2Lk00YLs0yVTZpmUB2M2_FD61Tjr0xhpyx1pEFojwTIp');"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-background-dark/90 to-background-dark/40 z-10"></div>
+            </div>
+            
+            <!-- Logo Area -->
+            <div class="relative z-20 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background-dark shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined text-[24px]">school</span>
+                </div>
+                <span class="text-white text-xl font-bold tracking-tight">EduManage</span>
+            </div>
+            
+            <!-- Headline Area -->
+            <div class="relative z-20 mb-8">
+                <h1 class="text-4xl font-bold text-white mb-4 leading-tight">
+                    Système de gestion de dossiers scolaires
+                </h1>
+                <p class="text-gray-300 text-lg font-light leading-relaxed max-w-md">
+                    Une plateforme centralisée pour simplifier la gestion administrative et pédagogique. Connectez-vous pour accéder à votre espace sécurisé.
+                </p>
+            </div>
+            
+            <!-- Footer Area -->
+            <div class="relative z-20 flex gap-6 text-sm text-gray-400">
+                <span>© 2025 EduManage</span>
+                <a class="hover:text-primary transition-colors" href="#">Politique de confidentialité</a>
+                <a class="hover:text-primary transition-colors" href="#">Mentions légales</a>
+            </div>
+        </div>
+        
+        <!-- Right Side: Login Form -->
+        <div class="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-12 lg:p-16 bg-white dark:bg-[#151c18]">
+            <!-- Mobile Logo (Visible only on small screens) -->
+            <div class="lg:hidden flex items-center gap-3 mb-8 justify-center">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-background-dark">
+                    <span class="material-symbols-outlined text-[24px]">school</span>
+                </div>
+                <span class="text-gray-900 dark:text-white text-xl font-bold">EduManage</span>
+            </div>
+            
+            <div class="max-w-[400px] w-full mx-auto">
+                <div class="mb-10 text-center lg:text-left">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Bienvenue</h2>
+                    <p class="text-gray-500 dark:text-gray-400">Veuillez entrer vos coordonnées pour vous connecter.</p>
+                </div>
+
+                {# Display login errors #}
+                {% if error %}
+                    <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-red-600 dark:text-red-400">error</span>
+                            <p class="text-sm text-red-800 dark:text-red-300">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <form action="{{ path('app_login') }}" method="post" class="space-y-6">
+                    <!-- Email Input -->
+                    <div class="space-y-2 group">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 group-focus-within:text-primary transition-colors duration-200" for="email">
+                            Email ou Identifiant
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 group-focus-within:text-primary transition-colors">mail</span>
+                            </div>
+                            <input 
+                                class="block w-full pl-11 pr-4 py-4 rounded-full text-gray-900 dark:text-white bg-gray-50 dark:bg-surface-dark border border-gray-200 dark:border-surface-border focus:ring-2 focus:ring-primary/50 focus:border-primary placeholder-gray-400 dark:placeholder-gray-600 transition-all duration-200" 
+                                id="email" 
+                                name="_username"
+                                value="{{ last_username }}"
+                                placeholder="ex: admin@school.com" 
+                                type="email"
+                                required
+                                autofocus
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Password Input -->
+                    <div class="space-y-2 group">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 group-focus-within:text-primary transition-colors duration-200" for="password">
+                                Mot de passe
+                            </label>
+                            <a class="text-sm font-medium text-primary hover:text-primary/80 transition-colors" href="#">
+                                Mot de passe oublié ?
+                            </a>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-gray-400 dark:text-gray-500 group-focus-within:text-primary transition-colors">lock</span>
+                            </div>
+                            <input 
+                                class="block w-full pl-11 pr-4 py-4 rounded-full text-gray-900 dark:text-white bg-gray-50 dark:bg-surface-dark border border-gray-200 dark:border-surface-border focus:ring-2 focus:ring-primary/50 focus:border-primary placeholder-gray-400 dark:placeholder-gray-600 transition-all duration-200" 
+                                id="password" 
+                                name="_password"
+                                placeholder="••••••••" 
+                                type="password"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {# CSRF Token for security #}
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    <!-- Submit Button -->
+                    <div class="pt-4">
+                        <button class="w-full flex justify-center py-4 px-4 border border-transparent rounded-full shadow-sm text-base font-bold text-background-dark bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white dark:focus:ring-offset-background-dark transition-all duration-200 transform hover:scale-[1.01] active:scale-[0.99]" type="submit">
+                            Se connecter
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Divider -->
+                <div class="relative my-8">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200 dark:border-surface-border"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white dark:bg-[#151c18] text-gray-500 dark:text-gray-500">Besoin d'aide ?</span>
+                    </div>
+                </div>
+
+                <!-- Contact Support Link -->
+                <div class="text-center">
+                    <a class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+                        <span class="material-symbols-outlined text-[18px]">support_agent</span>
+                        Contactez le support informatique
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - Administrateur{% endblock %}
+
+{% block body %}
+<div class="flex h-screen w-full overflow-hidden">
+    <!-- Sidebar Component -->
+    {% include 'components/_sidebar.html.twig' with {
+        'roleLabel': 'Admin Panel',
+        'activeMenu': 'dashboard',
+        'menuItems': [
+            {'id': 'dashboard', 'route': 'admin_dashboard', 'icon': 'dashboard', 'label': 'Tableau de bord'},
+            {'id': 'students', 'route': 'admin_dashboard', 'icon': 'school', 'label': 'Dossiers Élèves'},
+            {'id': 'teachers', 'route': 'admin_dashboard', 'icon': 'work', 'label': 'Enseignants'},
+            {'id': 'classes', 'route': 'admin_classes', 'icon': 'domain', 'label': 'Classes'},
+            {'id': 'stats', 'route': 'admin_dashboard', 'icon': 'bar_chart', 'label': 'Statistiques'}
+        ]
+    } %}
+
+    <!-- Main Content -->
+    <main class="flex flex-1 flex-col overflow-hidden bg-background-light dark:bg-background-dark">
+        <!-- Navbar Component -->
+        {% include 'components/_navbar.html.twig' with {
+            'pageTitle': 'Aperçu Général',
+            'user': app.user
+        } %}
+
+        <!-- Scrollable Page Content -->
+        <div class="flex-1 overflow-y-auto p-4 lg:p-10">
+            <div class="mx-auto flex max-w-[1200px] flex-col gap-8">
+                <!-- Page Heading -->
+                <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                    <div class="flex flex-col gap-1">
+                        <h1 class="text-3xl font-bold leading-tight text-slate-900 dark:text-white lg:text-4xl">
+                            Bienvenue, {{ app.user.prenom }} {{ app.user.nom }}
+                        </h1>
+                        <p class="text-base text-slate-500 dark:text-[#9eb7a8]">
+                            Voici les dernières statistiques de votre établissement.
+                        </p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-[#111714] transition-transform hover:scale-105">
+                            <span class="material-symbols-outlined text-[20px]">add</span>
+                            Nouvel Élève
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards Grid -->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <!-- Card 1: Students -->
+                    <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:bg-card-dark">
+                        <div class="mb-4 flex items-start justify-between">
+                            <div class="rounded-full bg-primary/20 p-3 text-primary">
+                                <span class="material-symbols-outlined">groups</span>
+                            </div>
+                            <span class="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-bold text-green-500">
+                                <span class="material-symbols-outlined text-[14px]">trending_up</span> +5%
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-[#9eb7a8]">Total Élèves</p>
+                            <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">{{ stats.totalEleves|default(0) }}</p>
+                        </div>
+                        <div class="absolute -right-6 -top-6 size-24 rounded-full bg-primary/5 transition-transform group-hover:scale-150"></div>
+                    </div>
+
+                    <!-- Card 2: Teachers -->
+                    <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:bg-card-dark">
+                        <div class="mb-4 flex items-start justify-between">
+                            <div class="rounded-full bg-blue-500/20 p-3 text-blue-500">
+                                <span class="material-symbols-outlined">assignment_ind</span>
+                            </div>
+                            <span class="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-bold text-green-500">
+                                <span class="material-symbols-outlined text-[14px]">trending_up</span> +2%
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-[#9eb7a8]">Enseignants</p>
+                            <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">{{ stats.totalEnseignants|default(0) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Classes -->
+                    <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:bg-card-dark">
+                        <div class="mb-4 flex items-start justify-between">
+                            <div class="rounded-full bg-orange-500/20 p-3 text-orange-500">
+                                <span class="material-symbols-outlined">meeting_room</span>
+                            </div>
+                            <span class="flex items-center gap-1 rounded-full bg-slate-500/10 px-2 py-1 text-xs font-bold text-slate-500 dark:text-[#9eb7a8]">
+                                0%
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-[#9eb7a8]">Classes Actives</p>
+                            <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">{{ stats.totalClasses|default(0) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Average -->
+                    <div class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:bg-card-dark">
+                        <div class="mb-4 flex items-start justify-between">
+                            <div class="rounded-full bg-purple-500/20 p-3 text-purple-500">
+                                <span class="material-symbols-outlined">grade</span>
+                            </div>
+                            <span class="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs font-bold text-green-500">
+                                <span class="material-symbols-outlined text-[14px]">trending_up</span> +1.2 pts
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-[#9eb7a8]">Moyenne Générale</p>
+                            <p class="mt-1 text-3xl font-bold text-slate-900 dark:text-primary">
+                                {{ stats.moyenneGenerale|default(0)|number_format(1) }}<span class="text-lg text-slate-500 dark:text-[#9eb7a8]">/20</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Content Grid -->
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    <!-- Chart Section -->
+                    <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-card-dark lg:col-span-2">
+                        <div class="mb-6 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Performance Académique</h3>
+                                <p class="text-sm text-slate-500 dark:text-[#9eb7a8]">Évolution de la moyenne globale (Semestre 1)</p>
+                            </div>
+                            <select class="rounded-full border-none bg-slate-100 py-2 pl-4 pr-10 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary dark:bg-[#29382f] dark:text-white">
+                                <option>Ce Semestre</option>
+                                <option>Année Dernière</option>
+                            </select>
+                        </div>
+                        <!-- Dynamic Chart -->
+                        {% if monthlyAverages|length > 0 %}
+                            <div class="relative h-[250px] w-full">
+                                <svg class="h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 800 250">
+                                    <defs>
+                                        <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                                            <stop offset="0%" stop-color="#38e07b" stop-opacity="0.3"></stop>
+                                            <stop offset="100%" stop-color="#38e07b" stop-opacity="0"></stop>
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Grid Lines -->
+                                    <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="200" y2="200"></line>
+                                    <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="150" y2="150"></line>
+                                    <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="100" y2="100"></line>
+                                    <line stroke="#29382f" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="50" y2="50"></line>
+                                    
+                                    {% set maxGrade = 20 %}
+                                    {% set chartWidth = 800 %}
+                                    {% set chartHeight = 250 %}
+                                    {% set numPoints = monthlyAverages|length %}
+                                    {% set spacing = chartWidth / (numPoints > 1 ? numPoints - 1 : 1) %}
+                                    
+                                    {# Build the path data #}
+                                    {% set pathData = 'M' %}
+                                    {% for data in monthlyAverages %}
+                                        {% set x = loop.index0 * spacing %}
+                                        {% set y = chartHeight - (data.average / maxGrade * chartHeight) %}
+                                        {% if loop.first %}
+                                            {% set pathData = pathData ~ x ~ ',' ~ y %}
+                                        {% else %}
+                                            {% set pathData = pathData ~ ' L' ~ x ~ ',' ~ y %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {# Area fill #}
+                                    <path d="{{ pathData }} V{{ chartHeight }} H0 Z" fill="url(#chartGradient)"></path>
+                                    
+                                    {# Line #}
+                                    <path d="{{ pathData }}" fill="none" stroke="#38e07b" stroke-linecap="round" stroke-width="3"></path>
+                                    
+                                    {# Data Points #}
+                                    {% for data in monthlyAverages %}
+                                        {% set x = loop.index0 * spacing %}
+                                        {% set y = chartHeight - (data.average / maxGrade * chartHeight) %}
+                                        <circle cx="{{ x }}" cy="{{ y }}" fill="#122017" r="4" stroke="#38e07b" stroke-width="2"></circle>
+                                    {% endfor %}
+                                </svg>
+                            </div>
+                            <!-- X Axis Labels (Dynamic) -->
+                            <div class="mt-4 flex justify-between px-2 text-sm font-medium text-slate-400 dark:text-[#9eb7a8]">
+                                {% for data in monthlyAverages %}
+                                    <span>{{ data.month }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="flex h-[250px] items-center justify-center">
+                                <p class="text-slate-500 dark:text-[#9eb7a8]">Aucune donnée disponible pour cette période</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Recent Activity List -->
+                    <div class="flex flex-col rounded-xl bg-white p-6 shadow-sm dark:bg-card-dark">
+                        <div class="mb-6 flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Activité Récente</h3>
+                            <a class="text-sm font-bold text-primary hover:underline" href="#">Voir tout</a>
+                        </div>
+                        
+                        {% if recentActivities|length > 0 %}
+                            <!-- Scrollable container: shows 3 items, scroll for more -->
+                            <div class="flex flex-col gap-6 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                                {% for activity in recentActivities %}
+                                    <div class="flex gap-4">
+                                        <div class="relative flex flex-col items-center">
+                                            <div class="z-10 flex size-10 items-center justify-center rounded-full bg-[#29382f] ring-4 ring-background-light dark:ring-card-dark">
+                                                <span class="material-symbols-outlined text-sm text-primary">edit_document</span>
+                                            </div>
+                                            {% if not loop.last %}
+                                                <div class="absolute top-10 h-full w-0.5 bg-[#29382f]"></div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex flex-col pb-2">
+                                            <p class="text-sm font-medium text-slate-900 dark:text-white">Note ajoutée</p>
+                                            <p class="text-xs text-slate-500 dark:text-[#9eb7a8]">
+                                                {{ activity.enseignant.prenom }} {{ activity.enseignant.nom }} a ajouté une note 
+                                                à {{ activity.eleve.prenom }} {{ activity.eleve.nom }} 
+                                                en {{ activity.matiere.libelle }}
+                                            </p>
+                                            <span class="mt-1 text-xs font-bold text-slate-400 dark:text-[#5e7065]">
+                                                {{ activity.dateNote|time_ago }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="flex h-32 items-center justify-center">
+                                <p class="text-slate-500 dark:text-[#9eb7a8]">Aucune activité récente</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
