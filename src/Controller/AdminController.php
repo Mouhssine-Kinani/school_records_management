@@ -168,6 +168,106 @@ class AdminController extends AbstractController
         }
     }
 
+    #[Route('/classes/{id}/edit', name: 'admin_edit_class', methods: ['PUT'])]
+    public function editClass(
+        int $id,
+        Request $request,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo,
+        \App\Repository\MatiereRepository $matiereRepo,
+        ClasseRepository $classeRepo
+    ): JsonResponse {
+        try {
+            $classe = $classeRepo->find($id);
+            if (!$classe) {
+                return new JsonResponse(['success' => false, 'message' => 'Classe introuvable.'], 404);
+            }
+
+            $data = json_decode($request->getContent(), true);
+            
+            // Validate required fields
+            if (empty($data['nom']) || empty($data['niveau']) || empty($data['annee_scolaire']) || 
+                empty($data['enseignant_id']) || empty($data['matiere_id'])) {
+                return new JsonResponse(['success' => false, 'message' => 'Tous les champs sont obligatoires.'], 400);
+            }
+
+            $currentYear = $classe->getAnneeScolaire();
+            $newYear = $data['annee_scolaire'];
+
+            // Update Class details
+            $classe->setNom($data['nom']);
+            $classe->setNiveau($data['niveau']);
+            $classe->setAnneeScolaire($newYear);
+
+            // Update Inscriptions if year changed
+            if ($currentYear !== $newYear) {
+                $em->createQuery('UPDATE App\Entity\Inscription i SET i.anneeScolaire = :newYear WHERE i.classe = :classe AND i.anneeScolaire = :currentYear')
+                   ->setParameter('newYear', $newYear)
+                   ->setParameter('classe', $classe)
+                   ->setParameter('currentYear', $currentYear)
+                   ->execute();
+            }
+
+            // Handle EnseignantMatiereClasse
+            $teacher = $utilisateurRepo->find($data['enseignant_id']);
+            $subject = $matiereRepo->find($data['matiere_id']);
+
+            if (!$teacher || $teacher->getRole() !== 'enseignant') {
+                return new JsonResponse(['success' => false, 'message' => 'Enseignant invalide.'], 400);
+            }
+            if (!$subject) {
+                return new JsonResponse(['success' => false, 'message' => 'Matière invalide.'], 400);
+            }
+
+            $emcRepo = $em->getRepository(EnseignantMatiereClasse::class);
+            
+            // Check if exact match exists for new year
+            $existingSpecific = $emcRepo->findOneBy([
+                'classe' => $classe,
+                'enseignant' => $teacher,
+                'matiere' => $subject,
+                'anneeScolaire' => $newYear
+            ]);
+
+            if (!$existingSpecific) {
+                // If distinct match doesn't exist, try to update an old one
+                // Look for one matching the OLD year to migrate
+                $candidate = $emcRepo->findOneBy([
+                    'classe' => $classe, 
+                    'anneeScolaire' => $currentYear
+                ]);
+
+                if ($candidate) {
+                    $candidate->setEnseignant($teacher);
+                    $candidate->setMatiere($subject);
+                    $candidate->setAnneeScolaire($newYear);
+                } else {
+                    // Create new if no candidate
+                    $newEmc = new EnseignantMatiereClasse();
+                    $newEmc->setClasse($classe);
+                    $newEmc->setEnseignant($teacher);
+                    $newEmc->setMatiere($subject);
+                    $newEmc->setAnneeScolaire($newYear);
+                    $em->persist($newEmc);
+                }
+            }
+
+            $em->flush();
+
+            // Cleanup: Delete any EMCs for this class that have the WRONG year (orphans)
+            // This handles the case where we had multiple or where we reverted to an existing one leaving the modified one behind
+            $em->createQuery('DELETE FROM App\Entity\EnseignantMatiereClasse emc WHERE emc.classe = :classe AND emc.anneeScolaire != :newYear')
+               ->setParameter('classe', $classe)
+               ->setParameter('newYear', $newYear)
+               ->execute();
+
+            return new JsonResponse(['success' => true, 'message' => 'Classe modifiée avec succès.']);
+
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la modification: ' . $e->getMessage()], 500);
+        }
+    }
+
     #[Route('/classes/{id}/delete', name: 'admin_delete_class', methods: ['DELETE'])]
     public function deleteClass(
         int $id,

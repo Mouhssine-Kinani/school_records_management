@@ -102,8 +102,12 @@
                         {% set badgeColor = badgeColors[gradientIndex] %}
                         
                         <div class="class-card group relative bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 p-4 sm:p-6 transition-all duration-300 flex flex-col gap-4 sm:gap-6" 
-                             data-class-name="{{ classe.nom|lower }}" 
-                             data-class-level="{{ classe.niveau|lower }}"
+                             data-class-id="{{ classe.id }}"
+                             data-class-name="{{ classe.nom }}" 
+                             data-class-level="{{ classe.niveau }}"
+                             data-annee-scolaire="{{ classe.annee_scolaire }}"
+                             data-teacher-id="{{ classe.teacher_id }}"
+                             data-subject-id="{{ classe.matiere_id }}"
                              data-teacher-name="{{ (classe.teacher_prenom|default('') ~ ' ' ~ classe.teacher_nom|default(''))|lower }}">
                             <div class="flex justify-between items-start">
                                 <div class="flex gap-3 sm:gap-4 items-center">
@@ -168,7 +172,7 @@
                                     {% endif %}
                                 </div>
                                 <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
-                                    <button class="size-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white hover:bg-primary hover:text-black transition-colors" title="Modifier">
+                                    <button class="edit-class-btn size-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white hover:bg-primary hover:text-black transition-colors" title="Modifier">
                                         <span class="material-symbols-outlined text-[18px]">edit</span>
                                     </button>
                                     <button class="delete-class-btn size-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white hover:bg-red-500 hover:text-white transition-colors" title="Supprimer" data-class-id="{{ classe.id }}" data-class-name="{{ classe.nom }}">
@@ -231,6 +235,7 @@
 
         {# Modal Body #}
         <form id="createClassForm" class="p-6 space-y-6">
+            <input type="hidden" id="classId" name="classId" value="">
             {# Class Information Section #}
             <div class="space-y-4">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -621,22 +626,39 @@ document.addEventListener('DOMContentLoaded', function() {
     function openModal() {
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-        // Reset form
-        createClassForm.reset();
     }
     
     // Close modal
     function closeModal() {
         modal.classList.add('hidden');
         document.body.style.overflow = '';
+        // Reset form completely on close to ensure clean state for next time
+        createClassForm.reset();
+        document.getElementById('classId').value = '';
+        
+        // Reset modal title and button
+        const titleEl = modal.querySelector('h2');
+        const submitBtnEl = document.getElementById('submitBtn');
+        const submitSpan = submitBtnEl.querySelector('span:not(.material-symbols-outlined)');
+        const submitIcon = submitBtnEl.querySelector('.material-symbols-outlined');
+        
+        if (titleEl) titleEl.textContent = 'Nouvelle Classe';
+        if (submitSpan) submitSpan.textContent = 'Créer la classe';
+        if (submitIcon) submitIcon.textContent = 'add_circle';
     }
     
-    // Event listeners for opening modal
+    // Event listeners for opening modal (Create New)
     if (openModalBtn) {
-        openModalBtn.addEventListener('click', openModal);
+        openModalBtn.addEventListener('click', function() {
+            createClassForm.reset();
+            openModal();
+        });
     }
     if (openModalBtnEmpty) {
-        openModalBtnEmpty.addEventListener('click', openModal);
+        openModalBtnEmpty.addEventListener('click', function() {
+            createClassForm.reset();
+            openModal();
+        });
     }
     
     // Event listeners for closing modal
@@ -648,6 +670,39 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === modal) {
             closeModal();
         }
+    });
+
+    // Handle Edit Click
+    function handleEditClick(e) {
+        // Find the closest card element
+        const card = e.target.closest('.class-card');
+        if (!card) return;
+
+        // Populate form fields
+        document.getElementById('classId').value = card.dataset.classId;
+        document.getElementById('className').value = card.dataset.className;
+        document.getElementById('classLevel').value = card.dataset.classLevel;
+        document.getElementById('schoolYear').value = card.dataset.anneeScolaire;
+        document.getElementById('teacherId').value = card.dataset.teacherId;
+        document.getElementById('subjectId').value = card.dataset.subjectId;
+
+        // Change Modal Title and Button
+        const titleEl = modal.querySelector('h2');
+        const submitBtnEl = document.getElementById('submitBtn');
+        const submitSpan = submitBtnEl.querySelector('span:not(.material-symbols-outlined)');
+        const submitIcon = submitBtnEl.querySelector('.material-symbols-outlined');
+        
+        if (titleEl) titleEl.textContent = 'Modifier la Classe';
+        if (submitSpan) submitSpan.textContent = 'Enregistrer';
+        if (submitIcon) submitIcon.textContent = 'save';
+
+        // Open Modal
+        openModal();
+    }
+
+    // Add event listeners to all edit buttons
+    document.querySelectorAll('.edit-class-btn').forEach(btn => {
+        btn.addEventListener('click', handleEditClick);
     });
     
     // Close modal on Escape key
@@ -676,8 +731,19 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         try {
-            const response = await fetch('{{ path('admin_create_class') }}', {
-                method: 'POST',
+            const classId = document.getElementById('classId').value;
+            let url = '{{ path('admin_create_class') }}';
+            let method = 'POST';
+            
+            if (classId) {
+                // If editing, use update URL and PUT method
+                // We need to construct the URL manually or Use a placeholder
+                url = '/admin/classes/' + classId + '/edit'; 
+                method = 'PUT';
+            }
+
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -688,7 +754,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (response.ok && result.success) {
                 // Show success toast
-                showToast('La classe a été créée avec succès!', 'success');
+                const message = classId ? 'Classe modifiée avec succès!' : 'La classe a été créée avec succès!';
+                showToast(message, 'success');
                 
                 // Close modal
                 closeModal();

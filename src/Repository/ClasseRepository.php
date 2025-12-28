@@ -31,8 +31,10 @@ class ClasseRepository extends ServiceEntityRepository
                 c.niveau,
                 c.annee_scolaire,
                 COUNT(DISTINCT i.id) as student_count,
+                u.id as teacher_id,
                 u.nom as teacher_nom,
                 u.prenom as teacher_prenom,
+                m.id as matiere_id,
                 m.libelle as matiere_libelle
             FROM classe c
             LEFT JOIN enseignant_matiere_classe emc ON c.id = emc.classe_id
@@ -41,7 +43,7 @@ class ClasseRepository extends ServiceEntityRepository
                 AND i.statut = :statut
             LEFT JOIN utilisateur u ON emc.enseignant_id = u.id AND u.role = :role
             LEFT JOIN matiere m ON emc.matiere_id = m.id
-            GROUP BY c.id, c.nom, c.niveau, c.annee_scolaire, u.nom, u.prenom, m.libelle
+            GROUP BY c.id, c.nom, c.niveau, c.annee_scolaire, u.id, u.nom, u.prenom, m.id, m.libelle
             ORDER BY c.niveau ASC, c.nom ASC
         ';
         
