@@ -101,17 +101,17 @@
                         {% set gradientIndex = loop.index0 % gradients|length %}
                         {% set badgeColor = badgeColors[gradientIndex] %}
                         
-                        <div class="class-card group relative bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 p-6 transition-all duration-300 flex flex-col gap-6" 
+                        <div class="class-card group relative bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 p-4 sm:p-6 transition-all duration-300 flex flex-col gap-4 sm:gap-6" 
                              data-class-name="{{ classe.nom|lower }}" 
                              data-class-level="{{ classe.niveau|lower }}"
                              data-teacher-name="{{ (classe.teacher_prenom|default('') ~ ' ' ~ classe.teacher_nom|default(''))|lower }}">
                             <div class="flex justify-between items-start">
-                                <div class="flex gap-4 items-center">
-                                    <div class="size-12 rounded-xl bg-gradient-to-br {{ gradients[gradientIndex] }} flex items-center justify-center text-white shadow-lg">
-                                        <span class="font-bold text-lg">{{ classe.nom|slice(0, 2)|upper }}</span>
+                                <div class="flex gap-3 sm:gap-4 items-center">
+                                    <div class="size-10 sm:size-12 rounded-xl bg-gradient-to-br {{ gradients[gradientIndex] }} flex items-center justify-center text-white shadow-lg">
+                                        <span class="font-bold text-base sm:text-lg">{{ classe.nom|slice(0, 2)|upper }}</span>
                                     </div>
                                     <div>
-                                        <h3 class="text-slate-900 dark:text-white text-xl font-bold leading-tight group-hover:text-primary transition-colors">{{ classe.nom }}</h3>
+                                        <h3 class="text-slate-900 dark:text-white text-lg sm:text-xl font-bold leading-tight group-hover:text-primary transition-colors">{{ classe.nom }}</h3>
                                         <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-{{ badgeColor }}-500/10 text-{{ badgeColor }}-400 border border-{{ badgeColor }}-500/20">{{ classe.niveau }}</span>
                                     </div>
                                 </div>
@@ -120,23 +120,32 @@
                                 </button>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-3 flex items-center gap-3 border border-slate-200 dark:border-[#29382f]">
-                                    <div class="p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-primary">
-                                        <span class="material-symbols-outlined text-[20px]">groups</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 border border-slate-200 dark:border-[#29382f]">
+                                    <div class="p-1.5 sm:p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-primary">
+                                        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">groups</span>
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="text-[10px] text-[#9eb7a8] uppercase font-bold tracking-wider">Élèves</span>
-                                        <span class="text-slate-900 dark:text-white font-bold text-lg">{{ classe.student_count|default(0) }}</span>
+                                        <span class="text-slate-900 dark:text-white font-bold text-base sm:text-lg">{{ classe.student_count|default(0) }}</span>
                                     </div>
                                 </div>
-                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-3 flex items-center gap-3 border border-slate-200 dark:border-[#29382f]">
-                                    <div class="p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-orange-400">
-                                        <span class="material-symbols-outlined text-[20px]">event_seat</span>
+                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 border border-slate-200 dark:border-[#29382f]">
+                                    <div class="p-1.5 sm:p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-orange-400">
+                                        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">event_seat</span>
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="text-[10px] text-[#9eb7a8] uppercase font-bold tracking-wider">Année</span>
-                                        <span class="text-slate-900 dark:text-white font-bold text-lg">{{ classe.annee_scolaire|default('N/A') }}</span>
+                                        <span class="text-slate-900 dark:text-white font-bold text-base sm:text-lg">{{ classe.annee_scolaire|default('N/A') }}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 border border-slate-200 dark:border-[#29382f] sm:col-span-2 lg:col-span-1">
+                                    <div class="p-1.5 sm:p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-purple-400">
+                                        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">menu_book</span>
+                                    </div>
+                                    <div class="flex flex-col min-w-0 flex-1">
+                                        <span class="text-[10px] text-[#9eb7a8] uppercase font-bold tracking-wider">Matière</span>
+                                        <span class="text-slate-900 dark:text-white font-bold text-sm truncate">{{ classe.matiere_libelle|default('N/A') }}</span>
                                     </div>
                                 </div>
                             </div>
