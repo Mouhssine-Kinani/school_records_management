@@ -1,7 +1,11 @@
 {# Reusable Sidebar Component #}
 {% set currentRoute = app.request.attributes.get('_route') %}
 
-<aside class="hidden w-72 flex-col border-r border-[#29382f] bg-background-light dark:bg-background-dark lg:flex">
+{# Mobile Backdrop #}
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+
+{# Sidebar #}
+<aside id="mobile-sidebar" class="fixed lg:relative z-50 lg:z-auto -translate-x-full lg:translate-x-0 transition-transform duration-300 w-72 flex-col border-r border-[#29382f] bg-background-light dark:bg-background-dark lg:flex">
     <div class="flex h-full flex-col justify-between p-6">
         <div class="flex flex-col gap-8">
             <!-- Brand -->

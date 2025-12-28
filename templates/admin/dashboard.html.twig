@@ -12,8 +12,7 @@
             {'id': 'dashboard', 'route': 'admin_dashboard', 'icon': 'dashboard', 'label': 'Tableau de bord'},
             {'id': 'students', 'route': 'admin_dashboard', 'icon': 'school', 'label': 'Dossiers Élèves'},
             {'id': 'teachers', 'route': 'admin_dashboard', 'icon': 'work', 'label': 'Enseignants'},
-            {'id': 'classes', 'route': 'admin_classes', 'icon': 'domain', 'label': 'Classes'},
-            {'id': 'stats', 'route': 'admin_dashboard', 'icon': 'bar_chart', 'label': 'Statistiques'}
+            {'id': 'classes', 'route': 'admin_classes', 'icon': 'domain', 'label': 'Classes'}
         ]
     } %}
 
@@ -38,12 +37,12 @@
                             Voici les dernières statistiques de votre établissement.
                         </p>
                     </div>
-                    <div class="flex gap-2">
+                    {# <div class="flex gap-2">
                         <button class="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-[#111714] transition-transform hover:scale-105">
                             <span class="material-symbols-outlined text-[20px]">add</span>
                             Nouvel Élève
                         </button>
-                    </div>
+                    </div> #}
                 </div>
 
                 <!-- Stats Cards Grid -->

@@ -3,25 +3,37 @@
 {% block title %}Gestion des Classes - Administration{% endblock %}
 
 {% block body %}
-<div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
-    {# Include Sidebar Component #}
-    {% include 'components/_sidebar.html.twig' %}
+<div class="flex h-screen w-full overflow-hidden">
+    <!-- Sidebar Component -->
+    {% include 'components/_sidebar.html.twig' with {
+        'roleLabel': 'Admin Panel',
+        'activeMenu': 'classes',
+        'menuItems': [
+            {'id': 'dashboard', 'route': 'admin_dashboard', 'icon': 'dashboard', 'label': 'Tableau de bord'},
+            {'id': 'students', 'route': 'admin_dashboard', 'icon': 'school', 'label': 'Dossiers Élèves'},
+            {'id': 'teachers', 'route': 'admin_dashboard', 'icon': 'work', 'label': 'Enseignants'},
+            {'id': 'classes', 'route': 'admin_classes', 'icon': 'domain', 'label': 'Classes'}
+        ]
+    } %}
 
-    {# Main Content Area #}
-    <div class="flex flex-1 flex-col">
-        {# Include Navbar Component #}
-        {% include 'components/_navbar.html.twig' %}
+    <!-- Main Content -->
+    <main class="flex flex-1 flex-col overflow-hidden bg-background-light dark:bg-background-dark">
+        <!-- Navbar Component -->
+        {% include 'components/_navbar.html.twig' with {
+            'pageTitle': 'Gestion des Classes',
+            'user': app.user
+        } %}
 
-        {# Main Content #}
-        <main class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
-            <div class="max-w-7xl mx-auto flex flex-col gap-8">
+        <!-- Scrollable Page Content -->
+        <div class="flex-1 overflow-y-auto p-4 lg:p-10">
+            <div class="mx-auto flex max-w-[1400px] flex-col gap-8">
                 {# Header & Actions #}
                 <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
                         <p class="text-[#9eb7a8] text-sm font-medium mb-1">Administration / Classes</p>
                         <h1 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Gestion des Classes</h1>
                     </div>
-                    <button class="flex items-center justify-center gap-2 bg-primary text-black hover:bg-white transition-colors h-12 px-6 rounded-full font-bold shadow-[0_0_20px_rgba(56,224,123,0.3)] hover:shadow-[0_0_30px_rgba(56,224,123,0.5)] active:scale-95 transform duration-200">
+                    <button id="openModalBtn" class="flex items-center justify-center gap-2 bg-primary text-black hover:bg-white transition-colors h-12 px-6 rounded-full font-bold shadow-[0_0_20px_rgba(56,224,123,0.3)] hover:shadow-[0_0_30px_rgba(56,224,123,0.5)] active:scale-95 transform duration-200">
                         <span class="material-symbols-outlined">add_circle</span>
                         <span>Nouvelle Classe</span>
                     </button>
@@ -89,17 +101,21 @@
                         {% set gradientIndex = loop.index0 % gradients|length %}
                         {% set badgeColor = badgeColors[gradientIndex] %}
                         
-                        <div class="class-card group relative bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 p-6 transition-all duration-300 flex flex-col gap-6" 
-                             data-class-name="{{ classe.nom|lower }}" 
-                             data-class-level="{{ classe.niveau|lower }}"
-                             data-teacher-name="{{ classe.teacher_prenom|default('') }} {{ classe.teacher_nom|default('') }}"|lower>
+                        <div class="class-card group relative bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 p-4 sm:p-6 transition-all duration-300 flex flex-col gap-4 sm:gap-6" 
+                             data-class-id="{{ classe.id }}"
+                             data-class-name="{{ classe.nom }}" 
+                             data-class-level="{{ classe.niveau }}"
+                             data-annee-scolaire="{{ classe.annee_scolaire }}"
+                             data-teacher-id="{{ classe.teacher_id }}"
+                             data-subject-id="{{ classe.matiere_id }}"
+                             data-teacher-name="{{ (classe.teacher_prenom|default('') ~ ' ' ~ classe.teacher_nom|default(''))|lower }}">
                             <div class="flex justify-between items-start">
-                                <div class="flex gap-4 items-center">
-                                    <div class="size-12 rounded-xl bg-gradient-to-br {{ gradients[gradientIndex] }} flex items-center justify-center text-white shadow-lg">
-                                        <span class="font-bold text-lg">{{ classe.nom|slice(0, 2)|upper }}</span>
+                                <div class="flex gap-3 sm:gap-4 items-center">
+                                    <div class="size-10 sm:size-12 rounded-xl bg-gradient-to-br {{ gradients[gradientIndex] }} flex items-center justify-center text-white shadow-lg">
+                                        <span class="font-bold text-base sm:text-lg">{{ classe.nom|slice(0, 2)|upper }}</span>
                                     </div>
                                     <div>
-                                        <h3 class="text-slate-900 dark:text-white text-xl font-bold leading-tight group-hover:text-primary transition-colors">{{ classe.nom }}</h3>
+                                        <h3 class="text-slate-900 dark:text-white text-lg sm:text-xl font-bold leading-tight group-hover:text-primary transition-colors">{{ classe.nom }}</h3>
                                         <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-{{ badgeColor }}-500/10 text-{{ badgeColor }}-400 border border-{{ badgeColor }}-500/20">{{ classe.niveau }}</span>
                                     </div>
                                 </div>
@@ -108,23 +124,32 @@
                                 </button>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-3 flex items-center gap-3 border border-slate-200 dark:border-[#29382f]">
-                                    <div class="p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-primary">
-                                        <span class="material-symbols-outlined text-[20px]">groups</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 border border-slate-200 dark:border-[#29382f]">
+                                    <div class="p-1.5 sm:p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-primary">
+                                        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">groups</span>
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="text-[10px] text-[#9eb7a8] uppercase font-bold tracking-wider">Élèves</span>
-                                        <span class="text-slate-900 dark:text-white font-bold text-lg">{{ classe.student_count|default(0) }}</span>
+                                        <span class="text-slate-900 dark:text-white font-bold text-base sm:text-lg">{{ classe.student_count|default(0) }}</span>
                                     </div>
                                 </div>
-                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-3 flex items-center gap-3 border border-slate-200 dark:border-[#29382f]">
-                                    <div class="p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-orange-400">
-                                        <span class="material-symbols-outlined text-[20px]">event_seat</span>
+                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 border border-slate-200 dark:border-[#29382f]">
+                                    <div class="p-1.5 sm:p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-orange-400">
+                                        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">event_seat</span>
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="text-[10px] text-[#9eb7a8] uppercase font-bold tracking-wider">Année</span>
-                                        <span class="text-slate-900 dark:text-white font-bold text-lg">{{ classe.annee_scolaire|default('N/A') }}</span>
+                                        <span class="text-slate-900 dark:text-white font-bold text-base sm:text-lg">{{ classe.annee_scolaire|default('N/A') }}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-slate-50 dark:bg-[#122017] rounded-xl p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 border border-slate-200 dark:border-[#29382f] sm:col-span-2 lg:col-span-1">
+                                    <div class="p-1.5 sm:p-2 bg-slate-200 dark:bg-[#29382f] rounded-lg text-purple-400">
+                                        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">menu_book</span>
+                                    </div>
+                                    <div class="flex flex-col min-w-0 flex-1">
+                                        <span class="text-[10px] text-[#9eb7a8] uppercase font-bold tracking-wider">Matière</span>
+                                        <span class="text-slate-900 dark:text-white font-bold text-sm truncate">{{ classe.matiere_libelle|default('N/A') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -147,10 +172,10 @@
                                     {% endif %}
                                 </div>
                                 <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
-                                    <button class="size-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white hover:bg-primary hover:text-black transition-colors" title="Modifier">
+                                    <button class="edit-class-btn size-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white hover:bg-primary hover:text-black transition-colors" title="Modifier">
                                         <span class="material-symbols-outlined text-[18px]">edit</span>
                                     </button>
-                                    <button class="size-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white hover:bg-red-500 hover:text-white transition-colors" title="Supprimer">
+                                    <button class="delete-class-btn size-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white hover:bg-red-500 hover:text-white transition-colors" title="Supprimer" data-class-id="{{ classe.id }}" data-class-name="{{ classe.nom }}">
                                         <span class="material-symbols-outlined text-[18px]">delete</span>
                                     </button>
                                 </div>
@@ -163,7 +188,7 @@
                             </div>
                             <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Aucune classe trouvée</h3>
                             <p class="text-[#9eb7a8] mb-6">Commencez par créer votre première classe</p>
-                            <button class="flex items-center gap-2 bg-primary text-black hover:bg-white transition-colors h-10 px-5 rounded-full font-bold">
+                            <button id="openModalBtnEmpty" class="flex items-center gap-2 bg-primary text-black hover:bg-white transition-colors h-10 px-5 rounded-full font-bold">
                                 <span class="material-symbols-outlined text-[20px]">add_circle</span>
                                 <span>Créer une classe</span>
                             </button>
@@ -174,15 +199,202 @@
                 {# Footer / Pagination #}
                 {% if classes|length > 0 %}
                     <div class="flex items-center justify-between mt-4 pb-8">
-                        <p class="text-sm text-[#9eb7a8]">Affichage de <span class="text-slate-900 dark:text-white font-bold">{{ classes|length }}</span> classe(s)</p>
+                        <p id="paginationInfo" class="text-sm text-[#9eb7a8]">Affichage de <span class="text-slate-900 dark:text-white font-bold">1-{{ classes|length > 20 ? 20 : classes|length }}</span> sur <span class="text-slate-900 dark:text-white font-bold">{{ classes|length }}</span> classe(s)</p>
                         <div class="flex gap-2">
-                            <button class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white text-sm font-medium hover:bg-primary hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>Précédent</button>
-                            <button class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white text-sm font-medium hover:bg-primary hover:text-black transition-colors">Suivant</button>
+                            <button id="prevPageBtn" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white text-sm font-medium hover:bg-primary hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>Précédent</button>
+                            <button id="nextPageBtn" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white text-sm font-medium hover:bg-primary hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Suivant</button>
                         </div>
                     </div>
                 {% endif %}
             </div>
-        </main>
+        </div>
+    </main>
+</div>
+
+{# Toast Notification Container #}
+<div id="toastContainer" class="fixed top-4 right-4 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+{# Modal for Creating New Class #}
+<div id="createClassModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        {# Modal Header #}
+        <div class="sticky top-0 bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-[#29382f] p-6 flex items-center justify-between z-10">
+            <div class="flex items-center gap-3">
+                <div class="size-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg">
+                    <span class="material-symbols-outlined">add_circle</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900 dark:text-white">Nouvelle Classe</h2>
+                    <p class="text-sm text-[#9eb7a8]">Créer une nouvelle classe et assigner un enseignant</p>
+                </div>
+            </div>
+            <button id="closeModalBtn" class="text-[#9eb7a8] hover:text-slate-900 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        {# Modal Body #}
+        <form id="createClassForm" class="p-6 space-y-6">
+            <input type="hidden" id="classId" name="classId" value="">
+            {# Class Information Section #}
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">info</span>
+                    Informations de la classe
+                </h3>
+                
+                {# Class Name #}
+                <div>
+                    <label for="className" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">
+                        Nom de la classe <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="className" name="nom" required
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#5a7063] focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                           placeholder="Ex: 6ème A">
+                </div>
+
+                {# Level #}
+                <div>
+                    <label for="classLevel" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">
+                        Niveau <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select id="classLevel" name="niveau" required
+                                class="appearance-none w-full bg-slate-50 dark:bg-[#122017] text-slate-900 dark:text-white border border-slate-200 dark:border-[#29382f] rounded-lg py-2.5 pl-4 pr-10 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer">
+                            <option value="">Sélectionner un niveau</option>
+                            <option value="6ème">6ème</option>
+                            <option value="5ème">5ème</option>
+                            <option value="4ème">4ème</option>
+                            <option value="3ème">3ème</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#9eb7a8]">
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+
+                {# School Year #}
+                <div>
+                    <label for="schoolYear" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">
+                        Année scolaire <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="schoolYear" name="annee_scolaire" required
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#5a7063] focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                           placeholder="Ex: 2024-2025"
+                           value="2024-2025">
+                </div>
+            </div>
+
+            {# Teacher Assignment Section #}
+            <div class="space-y-4 pt-4 border-t border-slate-200 dark:border-[#29382f]">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">person</span>
+                    Enseignant principal
+                </h3>
+                
+                <div>
+                    <label for="teacherId" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">
+                        Enseignant <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select id="teacherId" name="enseignant_id" required
+                                class="appearance-none w-full bg-slate-50 dark:bg-[#122017] text-slate-900 dark:text-white border border-slate-200 dark:border-[#29382f] rounded-lg py-2.5 pl-4 pr-10 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer">
+                            <option value="">Sélectionner un enseignant</option>
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}">{{ teacher.prenom }} {{ teacher.nom }}{% if teacher.specialite %} - {{ teacher.specialite }}{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#9eb7a8]">
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Subject Assignment Section #}
+            <div class="space-y-4 pt-4 border-t border-slate-200 dark:border-[#29382f]">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">menu_book</span>
+                    Matière principale
+                </h3>
+                
+                <div>
+                    <label for="subjectId" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">
+                        Matière <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select id="subjectId" name="matiere_id" required
+                                class="appearance-none w-full bg-slate-50 dark:bg-[#122017] text-slate-900 dark:text-white border border-slate-200 dark:border-[#29382f] rounded-lg py-2.5 pl-4 pr-10 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer">
+                            <option value="">Sélectionner une matière</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}">{{ subject.libelle }} (Coef: {{ subject.coefficient }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#9eb7a8]">
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-xs text-[#9eb7a8]">
+                        <span class="material-symbols-outlined text-[14px] align-middle">info</span>
+                        La matière principale sera enseignée par l'enseignant sélectionné
+                    </p>
+                </div>
+            </div>
+
+            {# Modal Footer #}
+            <div class="flex gap-3 pt-6 border-t border-slate-200 dark:border-[#29382f]">
+                <button type="button" id="cancelBtn" 
+                        class="flex-1 px-6 py-2.5 rounded-lg border border-slate-200 dark:border-[#29382f] text-slate-900 dark:text-white font-bold hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                    Annuler
+                </button>
+                <button type="submit" id="submitBtn"
+                        class="flex-1 px-6 py-2.5 rounded-lg bg-primary text-black font-bold hover:bg-white transition-colors shadow-[0_0_20px_rgba(56,224,123,0.3)] hover:shadow-[0_0_30px_rgba(56,224,123,0.5)] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>Créer la classe</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Delete Confirmation Modal #}
+<div id="deleteConfirmModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] max-w-md w-full shadow-2xl transform transition-all">
+        {# Modal Header #}
+        <div class="p-6 border-b border-slate-200 dark:border-[#29382f]">
+            <div class="flex items-center gap-3">
+                <div class="size-12 rounded-xl bg-red-500/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-red-500 text-3xl">warning</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-slate-900 dark:text-white">Confirmer la suppression</h2>
+                    <p class="text-sm text-[#9eb7a8]">Cette action est irréversible</p>
+                </div>
+            </div>
+        </div>
+
+        {# Modal Body #}
+        <div class="p-6">
+            <p class="text-slate-600 dark:text-slate-300">
+                Êtes-vous sûr de vouloir supprimer la classe <span id="deleteClassName" class="font-bold text-slate-900 dark:text-white"></span> ?
+            </p>
+            <p class="text-sm text-[#9eb7a8] mt-2">
+                Toutes les données associées à cette classe seront également supprimées.
+            </p>
+        </div>
+
+        {# Modal Footer #}
+        <div class="flex gap-3 p-6 border-t border-slate-200 dark:border-[#29382f]">
+            <button type="button" id="cancelDeleteBtn" 
+                    class="flex-1 px-6 py-2.5 rounded-lg border border-slate-200 dark:border-[#29382f] text-slate-900 dark:text-white font-bold hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                Annuler
+            </button>
+            <button type="button" id="confirmDeleteBtn"
+                    class="flex-1 px-6 py-2.5 rounded-lg bg-red-500 text-white font-bold hover:bg-red-600 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">delete</span>
+                <span>Supprimer</span>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -193,15 +405,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const gridViewBtn = document.getElementById('gridViewBtn');
     const listViewBtn = document.getElementById('listViewBtn');
     const classesGrid = document.getElementById('classesGrid');
-    const classCards = document.querySelectorAll('.class-card');
+    const classCards = Array.from(document.querySelectorAll('.class-card'));
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const paginationInfo = document.getElementById('paginationInfo');
+    
+    // Pagination state
+    let currentPage = 1;
+    const itemsPerPage = 20;
+    let filteredCards = [...classCards];
     
     // Filter function
     function filterClasses() {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const selectedLevel = levelFilter.value.toLowerCase();
-        let visibleCount = 0;
         
-        classCards.forEach(card => {
+        // Filter all cards
+        filteredCards = classCards.filter(card => {
             const className = card.dataset.className;
             const classLevel = card.dataset.classLevel;
             const teacherName = card.dataset.teacherName || '';
@@ -212,27 +432,62 @@ document.addEventListener('DOMContentLoaded', function() {
                                   teacherName.includes(searchTerm);
             const matchesLevel = !selectedLevel || classLevel === selectedLevel;
             
-            if (matchesSearch && matchesLevel) {
-                card.style.display = '';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
+            return matchesSearch && matchesLevel;
         });
         
-        // Update count display
-        updateResultCount(visibleCount);
+        // Reset to page 1 when filtering
+        currentPage = 1;
         
-        // Show/hide empty state
-        showEmptyState(visibleCount === 0);
+        // Apply pagination
+        paginateResults();
     }
     
-    // Update result count
-    function updateResultCount(count) {
-        const countElement = document.querySelector('.text-sm.text-\\[\\#9eb7a8\\] span');
-        if (countElement) {
-            countElement.textContent = count;
+    // Paginate results
+    function paginateResults() {
+        const totalItems = filteredCards.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        
+        // Hide all cards first
+        classCards.forEach(card => {
+            card.style.display = 'none';
+        });
+        
+        // Show only cards for current page
+        const cardsToShow = filteredCards.slice(startIndex, endIndex);
+        cardsToShow.forEach(card => {
+            card.style.display = '';
+        });
+        
+        // Update pagination info
+        updatePaginationInfo(startIndex, endIndex, totalItems);
+        
+        // Update button states
+        updatePaginationButtons(totalPages);
+        
+        // Show/hide empty state
+        showEmptyState(totalItems === 0);
+    }
+    
+    // Update pagination info text
+    function updatePaginationInfo(startIndex, endIndex, totalItems) {
+        if (totalItems === 0) {
+            paginationInfo.innerHTML = 'Affichage de <span class="text-slate-900 dark:text-white font-bold">0</span> sur <span class="text-slate-900 dark:text-white font-bold">0</span> classe(s)';
+        } else {
+            const start = startIndex + 1;
+            const end = Math.min(endIndex, totalItems);
+            paginationInfo.innerHTML = `Affichage de <span class="text-slate-900 dark:text-white font-bold">${start}-${end}</span> sur <span class="text-slate-900 dark:text-white font-bold">${totalItems}</span> classe(s)`;
         }
+    }
+    
+    // Update pagination button states
+    function updatePaginationButtons(totalPages) {
+        // Disable/enable Previous button
+        prevPageBtn.disabled = currentPage === 1;
+        
+        // Disable/enable Next button
+        nextPageBtn.disabled = currentPage >= totalPages || totalPages === 0;
     }
     
     // Show/hide empty state
@@ -253,6 +508,27 @@ document.addEventListener('DOMContentLoaded', function() {
             classesGrid.appendChild(emptyState);
         } else if (!show && emptyState) {
             emptyState.remove();
+        }
+    }
+    
+    // Navigate to previous page
+    function goToPreviousPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            paginateResults();
+            // Scroll to top of grid
+            classesGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+    
+    // Navigate to next page
+    function goToNextPage() {
+        const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            paginateResults();
+            // Scroll to top of grid
+            classesGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
     
@@ -284,9 +560,319 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listeners
     searchInput.addEventListener('input', filterClasses);
     levelFilter.addEventListener('change', filterClasses);
-    
+    prevPageBtn.addEventListener('click', goToPreviousPage);
+    nextPageBtn.addEventListener('click', goToNextPage);
     gridViewBtn.addEventListener('click', () => setViewMode('grid'));
     listViewBtn.addEventListener('click', () => setViewMode('list'));
+    
+    // Initialize pagination on page load
+    paginateResults();
+    
+    // ============================================
+    // Modal Functionality
+    // ============================================
+    
+    const modal = document.getElementById('createClassModal');
+    const openModalBtn = document.getElementById('openModalBtn');
+    const openModalBtnEmpty = document.getElementById('openModalBtnEmpty');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const createClassForm = document.getElementById('createClassForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const toastContainer = document.getElementById('toastContainer');
+    
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto transform transition-all duration-300 translate-x-full opacity-0 flex items-start gap-3 p-4 rounded-xl shadow-2xl border max-w-md ${
+            type === 'success' 
+                ? 'bg-white dark:bg-surface-dark border-primary/20' 
+                : 'bg-white dark:bg-surface-dark border-red-500/20'
+        }`;
+        
+        const icon = type === 'success' ? 'check_circle' : 'error';
+        const iconColor = type === 'success' ? 'text-primary' : 'text-red-500';
+        const titleColor = type === 'success' ? 'text-primary' : 'text-red-500';
+        const title = type === 'success' ? 'Succès' : 'Erreur';
+        
+        toast.innerHTML = `
+            <div class="flex-shrink-0">
+                <span class="material-symbols-outlined ${iconColor} text-2xl">${icon}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold ${titleColor}">${title}</p>
+                <p class="text-sm text-slate-600 dark:text-slate-300 mt-0.5">${message}</p>
+            </div>
+            <button class="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" onclick="this.parentElement.remove()">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Trigger animation
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+        }, 10);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
+    }
+    
+    // Open modal
+    function openModal() {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Close modal
+    function closeModal() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        // Reset form completely on close to ensure clean state for next time
+        createClassForm.reset();
+        document.getElementById('classId').value = '';
+        
+        // Reset modal title and button
+        const titleEl = modal.querySelector('h2');
+        const submitBtnEl = document.getElementById('submitBtn');
+        const submitSpan = submitBtnEl.querySelector('span:not(.material-symbols-outlined)');
+        const submitIcon = submitBtnEl.querySelector('.material-symbols-outlined');
+        
+        if (titleEl) titleEl.textContent = 'Nouvelle Classe';
+        if (submitSpan) submitSpan.textContent = 'Créer la classe';
+        if (submitIcon) submitIcon.textContent = 'add_circle';
+    }
+    
+    // Event listeners for opening modal (Create New)
+    if (openModalBtn) {
+        openModalBtn.addEventListener('click', function() {
+            createClassForm.reset();
+            openModal();
+        });
+    }
+    if (openModalBtnEmpty) {
+        openModalBtnEmpty.addEventListener('click', function() {
+            createClassForm.reset();
+            openModal();
+        });
+    }
+    
+    // Event listeners for closing modal
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Handle Edit Click
+    function handleEditClick(e) {
+        // Find the closest card element
+        const card = e.target.closest('.class-card');
+        if (!card) return;
+
+        // Populate form fields
+        document.getElementById('classId').value = card.dataset.classId;
+        document.getElementById('className').value = card.dataset.className;
+        document.getElementById('classLevel').value = card.dataset.classLevel;
+        document.getElementById('schoolYear').value = card.dataset.anneeScolaire;
+        document.getElementById('teacherId').value = card.dataset.teacherId;
+        document.getElementById('subjectId').value = card.dataset.subjectId;
+
+        // Change Modal Title and Button
+        const titleEl = modal.querySelector('h2');
+        const submitBtnEl = document.getElementById('submitBtn');
+        const submitSpan = submitBtnEl.querySelector('span:not(.material-symbols-outlined)');
+        const submitIcon = submitBtnEl.querySelector('.material-symbols-outlined');
+        
+        if (titleEl) titleEl.textContent = 'Modifier la Classe';
+        if (submitSpan) submitSpan.textContent = 'Enregistrer';
+        if (submitIcon) submitIcon.textContent = 'save';
+
+        // Open Modal
+        openModal();
+    }
+
+    // Add event listeners to all edit buttons
+    document.querySelectorAll('.edit-class-btn').forEach(btn => {
+        btn.addEventListener('click', handleEditClick);
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+    
+    // Form submission
+    createClassForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span>Création en cours...</span>';
+        
+        // Get form data
+        const formData = new FormData(createClassForm);
+        const data = {
+            nom: formData.get('nom'),
+            niveau: formData.get('niveau'),
+            annee_scolaire: formData.get('annee_scolaire'),
+            enseignant_id: formData.get('enseignant_id'),
+            matiere_id: formData.get('matiere_id')
+        };
+        
+        try {
+            const classId = document.getElementById('classId').value;
+            let url = '{{ path('admin_create_class') }}';
+            let method = 'POST';
+            
+            if (classId) {
+                // If editing, use update URL and PUT method
+                // We need to construct the URL manually or Use a placeholder
+                url = '/admin/classes/' + classId + '/edit'; 
+                method = 'PUT';
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                // Show success toast
+                const message = classId ? 'Classe modifiée avec succès!' : 'La classe a été créée avec succès!';
+                showToast(message, 'success');
+                
+                // Close modal
+                closeModal();
+                
+                // Reload page after 1.5 seconds
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                // Show error toast
+                showToast(result.message || 'Une erreur est survenue lors de la création de la classe.', 'error');
+                
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span class="material-symbols-outlined">add_circle</span><span>Créer la classe</span>';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Une erreur réseau est survenue. Veuillez réessayer.', 'error');
+            
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined">add_circle</span><span>Créer la classe</span>';
+        }
+    });
+    
+    // ============================================
+    // Delete Class Functionality
+    // ============================================
+    
+    const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+    const deleteClassName = document.getElementById('deleteClassName');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    let classToDelete = null;
+    
+    // Open delete confirmation modal
+    function openDeleteModal(classId, className) {
+        classToDelete = classId;
+        deleteClassName.textContent = className;
+        deleteConfirmModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Close delete confirmation modal
+    function closeDeleteModal() {
+        deleteConfirmModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        classToDelete = null;
+    }
+    
+    // Add event listeners to all delete buttons
+    document.querySelectorAll('.delete-class-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const classId = this.dataset.classId;
+            const className = this.dataset.className;
+            openDeleteModal(classId, className);
+        });
+    });
+    
+    // Cancel delete
+    cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+    
+    // Close modal when clicking outside
+    deleteConfirmModal.addEventListener('click', function(e) {
+        if (e.target === deleteConfirmModal) {
+            closeDeleteModal();
+        }
+    });
+    
+    // Confirm delete
+    confirmDeleteBtn.addEventListener('click', async function() {
+        if (!classToDelete) return;
+        
+        // Disable button and show loading state
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span>Suppression...</span>';
+        
+        try {
+            const response = await fetch(`{{ path('admin_delete_class', {'id': '__ID__'}) }}`.replace('__ID__', classToDelete), {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                // Show success toast
+                showToast('La classe a été supprimée avec succès!', 'success');
+                
+                // Close modal
+                closeDeleteModal();
+                
+                // Reload page after 1 second
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                // Show error toast
+                showToast(result.message || 'Une erreur est survenue lors de la suppression.', 'error');
+                
+                // Re-enable button
+                confirmDeleteBtn.disabled = false;
+                confirmDeleteBtn.innerHTML = '<span class="material-symbols-outlined">delete</span><span>Supprimer</span>';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Une erreur réseau est survenue. Veuillez réessayer.', 'error');
+            
+            // Re-enable button
+            confirmDeleteBtn.disabled = false;
+            confirmDeleteBtn.innerHTML = '<span class="material-symbols-outlined">delete</span><span>Supprimer</span>';
+        }
+    });
 });
 </script>
 {% endblock %}
