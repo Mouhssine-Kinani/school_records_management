@@ -57,5 +57,35 @@
 </head>
     <body>
         {% block body %}{% endblock %}
+        
+        <script>
+            // Mobile Sidebar Toggle Functionality
+            function toggleMobileSidebar() {
+                const sidebar = document.getElementById('mobile-sidebar');
+                const backdrop = document.getElementById('sidebar-backdrop');
+                
+                if (!sidebar || !backdrop) return;
+                
+                const isOpen = !sidebar.classList.contains('-translate-x-full');
+                
+                if (isOpen) {
+                    // Close sidebar
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('hidden');
+                } else {
+                    // Open sidebar
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                }
+            }
+            
+            // Close sidebar when clicking on backdrop
+            document.addEventListener('DOMContentLoaded', function() {
+                const backdrop = document.getElementById('sidebar-backdrop');
+                if (backdrop) {
+                    backdrop.addEventListener('click', toggleMobileSidebar);
+                }
+            });
+        </script>
     </body>
 </html>
