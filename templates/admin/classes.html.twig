@@ -3,18 +3,30 @@
 {% block title %}Gestion des Classes - Administration{% endblock %}
 
 {% block body %}
-<div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
-    {# Include Sidebar Component #}
-    {% include 'components/_sidebar.html.twig' %}
+<div class="flex h-screen w-full overflow-hidden">
+    <!-- Sidebar Component -->
+    {% include 'components/_sidebar.html.twig' with {
+        'roleLabel': 'Admin Panel',
+        'activeMenu': 'classes',
+        'menuItems': [
+            {'id': 'dashboard', 'route': 'admin_dashboard', 'icon': 'dashboard', 'label': 'Tableau de bord'},
+            {'id': 'students', 'route': 'admin_dashboard', 'icon': 'school', 'label': 'Dossiers Élèves'},
+            {'id': 'teachers', 'route': 'admin_dashboard', 'icon': 'work', 'label': 'Enseignants'},
+            {'id': 'classes', 'route': 'admin_classes', 'icon': 'domain', 'label': 'Classes'}
+        ]
+    } %}
 
-    {# Main Content Area #}
-    <div class="flex flex-1 flex-col">
-        {# Include Navbar Component #}
-        {% include 'components/_navbar.html.twig' %}
+    <!-- Main Content -->
+    <main class="flex flex-1 flex-col overflow-hidden bg-background-light dark:bg-background-dark">
+        <!-- Navbar Component -->
+        {% include 'components/_navbar.html.twig' with {
+            'pageTitle': 'Gestion des Classes',
+            'user': app.user
+        } %}
 
-        {# Main Content #}
-        <main class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
-            <div class="max-w-7xl mx-auto flex flex-col gap-8">
+        <!-- Scrollable Page Content -->
+        <div class="flex-1 overflow-y-auto p-4 lg:p-10">
+            <div class="mx-auto flex max-w-[1400px] flex-col gap-8">
                 {# Header & Actions #}
                 <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
@@ -182,9 +194,10 @@
                     </div>
                 {% endif %}
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 </div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
