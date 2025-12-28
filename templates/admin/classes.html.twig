@@ -104,7 +104,7 @@
                         <div class="class-card group relative bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 p-6 transition-all duration-300 flex flex-col gap-6" 
                              data-class-name="{{ classe.nom|lower }}" 
                              data-class-level="{{ classe.niveau|lower }}"
-                             data-teacher-name="{{ classe.teacher_prenom|default('') }} {{ classe.teacher_nom|default('') }}"|lower>
+                             data-teacher-name="{{ (classe.teacher_prenom|default('') ~ ' ' ~ classe.teacher_nom|default(''))|lower }}">
                             <div class="flex justify-between items-start">
                                 <div class="flex gap-4 items-center">
                                     <div class="size-12 rounded-xl bg-gradient-to-br {{ gradients[gradientIndex] }} flex items-center justify-center text-white shadow-lg">
@@ -186,10 +186,10 @@
                 {# Footer / Pagination #}
                 {% if classes|length > 0 %}
                     <div class="flex items-center justify-between mt-4 pb-8">
-                        <p class="text-sm text-[#9eb7a8]">Affichage de <span class="text-slate-900 dark:text-white font-bold">{{ classes|length }}</span> classe(s)</p>
+                        <p id="paginationInfo" class="text-sm text-[#9eb7a8]">Affichage de <span class="text-slate-900 dark:text-white font-bold">1-{{ classes|length > 20 ? 20 : classes|length }}</span> sur <span class="text-slate-900 dark:text-white font-bold">{{ classes|length }}</span> classe(s)</p>
                         <div class="flex gap-2">
-                            <button class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white text-sm font-medium hover:bg-primary hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>Précédent</button>
-                            <button class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white text-sm font-medium hover:bg-primary hover:text-black transition-colors">Suivant</button>
+                            <button id="prevPageBtn" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white text-sm font-medium hover:bg-primary hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>Précédent</button>
+                            <button id="nextPageBtn" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-[#29382f] text-slate-900 dark:text-white text-sm font-medium hover:bg-primary hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Suivant</button>
                         </div>
                     </div>
                 {% endif %}
@@ -206,15 +206,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const gridViewBtn = document.getElementById('gridViewBtn');
     const listViewBtn = document.getElementById('listViewBtn');
     const classesGrid = document.getElementById('classesGrid');
-    const classCards = document.querySelectorAll('.class-card');
+    const classCards = Array.from(document.querySelectorAll('.class-card'));
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const paginationInfo = document.getElementById('paginationInfo');
+    
+    // Pagination state
+    let currentPage = 1;
+    const itemsPerPage = 20;
+    let filteredCards = [...classCards];
     
     // Filter function
     function filterClasses() {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const selectedLevel = levelFilter.value.toLowerCase();
-        let visibleCount = 0;
         
-        classCards.forEach(card => {
+        // Filter all cards
+        filteredCards = classCards.filter(card => {
             const className = card.dataset.className;
             const classLevel = card.dataset.classLevel;
             const teacherName = card.dataset.teacherName || '';
@@ -225,27 +233,62 @@ document.addEventListener('DOMContentLoaded', function() {
                                   teacherName.includes(searchTerm);
             const matchesLevel = !selectedLevel || classLevel === selectedLevel;
             
-            if (matchesSearch && matchesLevel) {
-                card.style.display = '';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
+            return matchesSearch && matchesLevel;
         });
         
-        // Update count display
-        updateResultCount(visibleCount);
+        // Reset to page 1 when filtering
+        currentPage = 1;
         
-        // Show/hide empty state
-        showEmptyState(visibleCount === 0);
+        // Apply pagination
+        paginateResults();
     }
     
-    // Update result count
-    function updateResultCount(count) {
-        const countElement = document.querySelector('.text-sm.text-\\[\\#9eb7a8\\] span');
-        if (countElement) {
-            countElement.textContent = count;
+    // Paginate results
+    function paginateResults() {
+        const totalItems = filteredCards.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        
+        // Hide all cards first
+        classCards.forEach(card => {
+            card.style.display = 'none';
+        });
+        
+        // Show only cards for current page
+        const cardsToShow = filteredCards.slice(startIndex, endIndex);
+        cardsToShow.forEach(card => {
+            card.style.display = '';
+        });
+        
+        // Update pagination info
+        updatePaginationInfo(startIndex, endIndex, totalItems);
+        
+        // Update button states
+        updatePaginationButtons(totalPages);
+        
+        // Show/hide empty state
+        showEmptyState(totalItems === 0);
+    }
+    
+    // Update pagination info text
+    function updatePaginationInfo(startIndex, endIndex, totalItems) {
+        if (totalItems === 0) {
+            paginationInfo.innerHTML = 'Affichage de <span class="text-slate-900 dark:text-white font-bold">0</span> sur <span class="text-slate-900 dark:text-white font-bold">0</span> classe(s)';
+        } else {
+            const start = startIndex + 1;
+            const end = Math.min(endIndex, totalItems);
+            paginationInfo.innerHTML = `Affichage de <span class="text-slate-900 dark:text-white font-bold">${start}-${end}</span> sur <span class="text-slate-900 dark:text-white font-bold">${totalItems}</span> classe(s)`;
         }
+    }
+    
+    // Update pagination button states
+    function updatePaginationButtons(totalPages) {
+        // Disable/enable Previous button
+        prevPageBtn.disabled = currentPage === 1;
+        
+        // Disable/enable Next button
+        nextPageBtn.disabled = currentPage >= totalPages || totalPages === 0;
     }
     
     // Show/hide empty state
@@ -266,6 +309,27 @@ document.addEventListener('DOMContentLoaded', function() {
             classesGrid.appendChild(emptyState);
         } else if (!show && emptyState) {
             emptyState.remove();
+        }
+    }
+    
+    // Navigate to previous page
+    function goToPreviousPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            paginateResults();
+            // Scroll to top of grid
+            classesGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+    
+    // Navigate to next page
+    function goToNextPage() {
+        const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            paginateResults();
+            // Scroll to top of grid
+            classesGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
     
@@ -297,9 +361,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listeners
     searchInput.addEventListener('input', filterClasses);
     levelFilter.addEventListener('change', filterClasses);
-    
+    prevPageBtn.addEventListener('click', goToPreviousPage);
+    nextPageBtn.addEventListener('click', goToNextPage);
     gridViewBtn.addEventListener('click', () => setViewMode('grid'));
     listViewBtn.addEventListener('click', () => setViewMode('list'));
+    
+    // Initialize pagination on page load
+    paginateResults();
 });
 </script>
 {% endblock %}
