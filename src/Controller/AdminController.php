@@ -185,13 +185,24 @@ class AdminController extends AbstractController
                 ], 404);
             }
             
-            // Remove the class (cascade will handle related records)
+            // 1. Delete dependent EnseignantMatiereClasse records
+            // We use DQL for efficiency or findBy + remove
+            $em->createQuery('DELETE FROM App\Entity\EnseignantMatiereClasse emc WHERE emc.classe = :classe')
+               ->setParameter('classe', $classe)
+               ->execute();
+               
+            // 2. Delete dependent Inscription records (students in this class)
+            $em->createQuery('DELETE FROM App\Entity\Inscription i WHERE i.classe = :classe')
+               ->setParameter('classe', $classe)
+               ->execute();
+            
+            // 3. Remove the class itself
             $em->remove($classe);
             $em->flush();
             
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Classe supprimée avec succès.'
+                'message' => 'Classe et données associées supprimées avec succès.'
             ], 200);
             
         } catch (\Exception $e) {
