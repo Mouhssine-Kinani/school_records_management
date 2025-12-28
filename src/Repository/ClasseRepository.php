@@ -34,8 +34,10 @@ class ClasseRepository extends ServiceEntityRepository
                 u.nom as teacher_nom,
                 u.prenom as teacher_prenom
             FROM classe c
-            LEFT JOIN inscription i ON c.id = i.classe_id AND i.statut = :statut
             LEFT JOIN enseignant_matiere_classe emc ON c.id = emc.classe_id
+            LEFT JOIN inscription i ON c.id = i.classe_id 
+                AND i.annee_scolaire = c.annee_scolaire 
+                AND i.statut = :statut
             LEFT JOIN utilisateur u ON emc.enseignant_id = u.id AND u.role = :role
             GROUP BY c.id, c.nom, c.niveau, c.annee_scolaire, u.nom, u.prenom
             ORDER BY c.niveau ASC, c.nom ASC
@@ -43,7 +45,7 @@ class ClasseRepository extends ServiceEntityRepository
         
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery([
-            'statut' => 'actif',
+            'statut' => 'active',
             'role' => 'enseignant'
         ]);
         
