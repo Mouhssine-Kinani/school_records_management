@@ -3,16 +3,17 @@
 {% block title %}Gestion des Enseignants - Système Scolaire{% endblock %}
 
 {% block body %}
-<div class="flex min-h-screen">
+<div class="flex h-screen w-full overflow-hidden">
     <!-- Sidebar -->
     {% include 'components/_sidebar.html.twig' %}
 
-    <div class="flex-1 flex flex-col min-w-0 bg-background-light dark:bg-background-dark">
+    <div class="flex-1 flex flex-col min-w-0 bg-background-light dark:bg-background-dark overflow-hidden">
         <!-- Navbar -->
         {% include 'components/_navbar.html.twig' %}
 
         <!-- Main Content Area -->
-        <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-8 flex flex-col gap-8">
+        <main class="flex-1 overflow-y-auto w-full">
+            <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-8">
             <!-- Page Heading -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div class="flex flex-col gap-2">
@@ -175,6 +176,7 @@
                     </div>
                 </div>
                 {% endif %}
+            </div>
             </div>
         </main>
     </div>
