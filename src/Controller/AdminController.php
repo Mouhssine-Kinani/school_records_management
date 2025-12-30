@@ -83,6 +83,26 @@ class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/enseignants/{id}', name: 'admin_enseignant_details', requirements: ['id' => '\d+'])]
+    public function enseignantDetails(int $id, UtilisateurRepository $utilisateurRepo): Response
+    {
+        $teacherData = $utilisateurRepo->getTeacherDetailsWithClasses($id);
+        
+        if (!$teacherData) {
+            throw $this->createNotFoundException('Enseignant non trouvé');
+        }
+
+        return $this->render('admin/enseignantDetails.html.twig', [
+            'user' => $this->getUser(),
+            'teacher' => $teacherData['teacher'],
+            'classes' => $teacherData['classes'],
+            'menuItems' => $this->getMenuItems(),
+            'activeMenu' => 'teachers',
+            'roleLabel' => 'Admin Panel',
+            'pageTitle' => 'Détails Enseignant',
+        ]);
+    }
+
     #[Route('/enseignants/create', name: 'admin_create_enseignant', methods: ['POST'])]
     public function createEnseignant(
         Request $request,

@@ -134,9 +134,9 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
-                                        <button class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-background-dark text-slate-500 dark:text-[#9eb7a8] hover:text-primary transition-colors" title="Voir">
+                                        <a href="{{ path('admin_enseignant_details', {id: enseignant.id}) }}" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-background-dark text-slate-500 dark:text-[#9eb7a8] hover:text-primary transition-colors" title="Voir">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                        </button>
+                                        </a>
                                         <button class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-background-dark text-slate-500 dark:text-[#9eb7a8] hover:text-primary transition-colors" title="Éditer">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
