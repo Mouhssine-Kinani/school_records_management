@@ -5,16 +5,7 @@
 {% block body %}
 <div class="flex h-screen w-full overflow-hidden">
     <!-- Sidebar Component -->
-    {% include 'components/_sidebar.html.twig' with {
-        'roleLabel': 'Admin Panel',
-        'activeMenu': 'classes',
-        'menuItems': [
-            {'id': 'dashboard', 'route': 'admin_dashboard', 'icon': 'dashboard', 'label': 'Tableau de bord'},
-            {'id': 'students', 'route': 'admin_dashboard', 'icon': 'school', 'label': 'Dossiers Élèves'},
-            {'id': 'teachers', 'route': 'admin_dashboard', 'icon': 'work', 'label': 'Enseignants'},
-            {'id': 'classes', 'route': 'admin_classes', 'icon': 'domain', 'label': 'Classes'}
-        ]
-    } %}
+    {% include 'components/_sidebar.html.twig' %}
 
     <!-- Main Content -->
     <main class="flex flex-1 flex-col overflow-hidden bg-background-light dark:bg-background-dark">

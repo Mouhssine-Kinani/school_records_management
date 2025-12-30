@@ -19,6 +19,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class AdminController extends AbstractController
 {
+    /**
+     * Get unified menu items for admin sidebar
+     */
+    private function getMenuItems(): array
+    {
+        return [
+            ['id' => 'dashboard', 'route' => 'admin_dashboard', 'icon' => 'dashboard', 'label' => 'Tableau de bord'],
+            ['id' => 'students', 'route' => 'admin_dashboard', 'icon' => 'school', 'label' => 'Dossiers Élèves'],
+            ['id' => 'teachers', 'route' => 'admin_enseignants', 'icon' => 'work', 'label' => 'Enseignants'],
+            ['id' => 'classes', 'route' => 'admin_classes', 'icon' => 'domain', 'label' => 'Classes']
+        ];
+    }
+
     #[Route('/dashboard', name: 'admin_dashboard')]
     public function dashboard(
         UtilisateurRepository $utilisateurRepo,
@@ -39,11 +52,32 @@ class AdminController extends AbstractController
         // Fetch recent activities
         $recentActivities = $noteRepo->getRecentActivities(10);
 
+
+
         return $this->render('admin/dashboard.html.twig', [
             'user' => $this->getUser(),
             'stats' => $stats,
             'monthlyAverages' => $monthlyAverages,
             'recentActivities' => $recentActivities,
+            'menuItems' => $this->getMenuItems(),
+            'activeMenu' => 'dashboard',
+            'roleLabel' => 'Admin Panel',
+            'pageTitle' => 'Tableau de bord',
+        ]);
+    }
+
+    #[Route('/enseignants', name: 'admin_enseignants')]
+    public function enseignants(UtilisateurRepository $utilisateurRepo): Response
+    {
+        $enseignants = $utilisateurRepo->findBy(['role' => 'enseignant']);
+
+        return $this->render('admin/enseignant.html.twig', [
+            'user' => $this->getUser(),
+            'enseignants' => $enseignants,
+            'menuItems' => $this->getMenuItems(),
+            'activeMenu' => 'teachers',
+            'roleLabel' => 'Admin Panel',
+            'pageTitle' => 'Gestion des Enseignants',
         ]);
     }
 
@@ -59,21 +93,12 @@ class AdminController extends AbstractController
         $teachers = $utilisateurRepo->findBy(['role' => 'enseignant']);
         $subjects = $matiereRepo->findAll();
         
-        // Define menu items for sidebar
-        $menuItems = [
-            ['id' => 'dashboard', 'label' => 'Tableau de bord', 'icon' => 'dashboard', 'route' => 'admin_dashboard'],
-            ['id' => 'students', 'label' => 'Étudiants', 'icon' => 'school', 'route' => 'admin_dashboard'],
-            ['id' => 'teachers', 'label' => 'Enseignants', 'icon' => 'person', 'route' => 'admin_dashboard'],
-            ['id' => 'classes', 'label' => 'Classes', 'icon' => 'meeting_room', 'route' => 'admin_classes'],
-            ['id' => 'schedule', 'label' => 'Emploi du temps', 'icon' => 'calendar_month', 'route' => 'admin_dashboard'],
-        ];
-
         return $this->render('admin/classes.html.twig', [
             'user' => $this->getUser(),
             'classes' => $classes,
             'teachers' => $teachers,
             'subjects' => $subjects,
-            'menuItems' => $menuItems,
+            'menuItems' => $this->getMenuItems(),
             'activeMenu' => 'classes',
             'roleLabel' => 'Admin Panel',
             'pageTitle' => 'Gestion des Classes',
