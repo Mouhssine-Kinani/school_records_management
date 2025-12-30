@@ -7,6 +7,7 @@ use App\Repository\ClasseRepository;
 use App\Repository\NoteRepository;
 use App\Entity\Classe;
 use App\Entity\EnseignantMatiereClasse;
+use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
@@ -79,6 +81,71 @@ class AdminController extends AbstractController
             'roleLabel' => 'Admin Panel',
             'pageTitle' => 'Gestion des Enseignants',
         ]);
+    }
+
+    #[Route('/enseignants/create', name: 'admin_create_enseignant', methods: ['POST'])]
+    public function createEnseignant(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo
+    ): JsonResponse {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            // Validation simple
+            if (empty($data['nom']) || empty($data['prenom']) || empty($data['email']) || empty($data['mot_de_passe'])) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Veuillez remplir les champs obligatoires (Nom, Prénom, Email, Mot de passe).'
+                ], 400);
+            }
+
+            // Vérifier si l'email existe déjà
+            $existingUser = $utilisateurRepo->findOneBy(['email' => $data['email']]);
+            if ($existingUser) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Cet email est déjà utilisé par un autre utilisateur.'
+                ], 400);
+            }
+
+            // Création de le'nseignant
+            $enseignant = new Utilisateur();
+            $enseignant->setNom($data['nom']);
+            $enseignant->setPrenom($data['prenom']);
+            $enseignant->setEmail($data['email']);
+            $enseignant->setRole('enseignant'); // Défini comme enseignant
+            
+            // Hash du mot de passe
+            $hashedPassword = $passwordHasher->hashPassword(
+                $enseignant,
+                $data['mot_de_passe']
+            );
+            $enseignant->setMotDePasse($hashedPassword);
+
+            // Champs optionnels
+            if (!empty($data['telephone'])) {
+                $enseignant->setTelephone($data['telephone']);
+            }
+            if (!empty($data['specialite'])) {
+                $enseignant->setSpecialite($data['specialite']);
+            }
+
+            $em->persist($enseignant);
+            $em->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Enseignant ajouté avec succès.'
+            ], 201);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue : ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     #[Route('/classes', name: 'admin_classes')]
