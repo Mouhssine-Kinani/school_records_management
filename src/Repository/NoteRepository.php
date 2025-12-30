@@ -30,16 +30,24 @@ class NoteRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get monthly averages for the last 12 months
+     * Get monthly averages for the current school year
+     * Uses native SQL as MONTH() is not supported in standard DQL
      * Returns an array with month names and their corresponding averages
      */
     public function getMonthlyAverages(): array
     {
-        // Get data from the last 12 months
-        $endDate = new \DateTime();
-        $startDate = (clone $endDate)->modify('-12 months');
+        // School year typically runs Sept to June
+        $currentYear = (int) date('Y');
+        $currentMonth = (int) date('m');
+        
+        // If we're in Jan-Aug, school year started last year
+        $schoolYearStart = $currentMonth < 9 
+            ? new \DateTime(($currentYear - 1) . '-09-01')
+            : new \DateTime($currentYear . '-09-01');
+        
+        $schoolYearEnd = (clone $schoolYearStart)->modify('+10 months'); // Through June
 
-        // Use native SQL query since MONTH() is not supported in DQL
+        // Use native SQL - MONTH() function is MySQL-specific and not in standard DQL
         $conn = $this->getEntityManager()->getConnection();
         
         $sql = '
@@ -52,11 +60,11 @@ class NoteRepository extends ServiceEntityRepository
         
         $stmt = $conn->prepare($sql);
         $results = $stmt->executeQuery([
-            'start' => $startDate->format('Y-m-d'),
-            'end' => $endDate->format('Y-m-d')
+            'start' => $schoolYearStart->format('Y-m-d'),
+            'end' => $schoolYearEnd->format('Y-m-d')
         ])->fetchAllAssociative();
 
-        // Map month numbers to French names
+        // Map month numbers to French names (school year order: Sept-June)
         $monthNames = [
             9 => 'Sept', 10 => 'Oct', 11 => 'Nov', 12 => 'Déc',
             1 => 'Jan', 2 => 'Fév', 3 => 'Mars', 4 => 'Avr',

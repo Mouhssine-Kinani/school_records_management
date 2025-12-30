@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestion Scolaire - Plateforme Moderne</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#38e07b",
+              "background-light": "#f6f8f7",
+              "background-dark": "#122017",
+              "surface-dark": "#1c2620",
+              "surface-border": "#29382f",
+            },
+            fontFamily: {
+              "display": ["Spline Sans", "sans-serif"]
+            },
+            borderRadius: {
+              "DEFAULT": "1rem", 
+              "lg": "1.5rem", 
+              "xl": "2rem", 
+              "2xl": "3rem", 
+              "full": "9999px"
+            },
+            boxShadow: {
+                "glow": "0 0 20px rgba(56, 224, 123, 0.2)",
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for modern feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #122017;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #29382f;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38e07b;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-background-dark overflow-x-hidden">
+<!-- Sticky Navigation Bar -->
+<nav class="sticky top-0 z-50 w-full border-b border-surface-border bg-background-dark/80 backdrop-blur-md">
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<div class="flex h-20 items-center justify-between">
+<!-- Logo Area -->
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-white hidden sm:block">Gestion Scolaire</span>
+</div>
+<!-- Desktop Navigation Links -->
+<div class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Accueil</a>
+ <a class="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#features">Fonctionnalités</a>
+{#<a class="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#about">À propos</a>
+<a class="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#contact">Contact</a> #}
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-3">
+<button class="hidden sm:flex h-10 items-center justify-center rounded-full border border-surface-border bg-transparent px-5 text-sm font-bold text-white transition hover:bg-surface-border hover:border-primary/50">
+<span class="mr-2 material-symbols-outlined text-[20px]">family_restroom</span>
+<span>Accès Parents</span>
+</button>
+<a class="flex h-10 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-background-dark shadow-glow transition hover:bg-[#2ec568]" href="{{ path('app_login') }}">
+<span class="mr-2 material-symbols-outlined text-[20px]">login</span>
+<span>Connexion</span>
+</a>
+</div>
+</div>
+</div>
+</nav>
+<main class="flex flex-col">
+<!-- Hero Section -->
+<section class="relative overflow-hidden py-16 lg:py-24">
+<!-- Background Decoration -->
+<div class="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-primary/5 blur-3xl"></div>
+<div class="absolute top-1/2 right-0 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl"></div>
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+<div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+<!-- Text Content -->
+<div class="flex-1 text-center lg:text-left">
+<div class="inline-flex items-center gap-2 rounded-full bg-surface-border px-3 py-1 text-xs font-medium text-primary mb-6">
+<span class="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+                            Nouveau portail disponible
+                        </div>
+<h1 class="text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl mb-6">
+                            Plateforme de gestion <span class="text-primary">scolaire moderne</span>
+</h1>
+<p class="text-lg text-gray-400 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                            Simplifiez la vie scolaire avec une suite complète pour la gestion des élèves, le suivi des notes et la génération de bulletins. Une interface intuitive pour l'administration, les enseignants et les familles.
+                        </p>
+<div class="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+<button class="flex h-12 min-w-[160px] items-center justify-center rounded-full bg-primary px-6 text-base font-bold text-background-dark shadow-lg shadow-primary/20 hover:scale-105 transition-transform duration-200">
+                                Commencer maintenant
+                            </button>
+<button class="flex h-12 min-w-[160px] items-center justify-center rounded-full border border-surface-border bg-surface-dark/50 px-6 text-base font-bold text-white hover:bg-surface-border transition-colors">
+                                Voir la démo
+                            </button>
+</div>
+<!-- Mini Stats -->
+<div class="mt-10 flex items-center justify-center lg:justify-start gap-8 border-t border-surface-border pt-8">
+<div>
+<p class="text-2xl font-bold text-white">500+</p>
+<p class="text-sm text-gray-500">Établissements</p>
+</div>
+<div class="h-8 w-px bg-surface-border"></div>
+<div>
+<p class="text-2xl font-bold text-white">99.9%</p>
+<p class="text-sm text-gray-500">Disponibilité</p>
+</div>
+<div class="h-8 w-px bg-surface-border"></div>
+<div>
+<p class="text-2xl font-bold text-white">24/7</p>
+<p class="text-sm text-gray-500">Support</p>
+</div>
+</div>
+</div>
+<!-- Hero Image / Visual -->
+<div class="flex-1 w-full max-w-[600px] lg:max-w-none">
+<div class="relative rounded-2xl bg-surface-border p-2 ring-1 ring-white/10 shadow-2xl">
+<div class="aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-dark relative">
+<!-- Abstract UI representation -->
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Modern dashboard interface overlaying a blurred technology background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD18eh7FwQqZCLKi5qE1Ys1EaRpayTLclsDw-Zu0JOUddzl2Tw7wlEbrXfxJPnmB8zUUyW-R1e6sK_W7iA57BJaKRb-y796LG3XwpUeTVCYiBUaGKpzuyC8_m5LSsnVoC9pUFd_p3T5MsavJlXshfN8MFeh4HLZaO9YClcGXF9itqgEEU7pMiR_JUwTWLo2jIGZR1UM1omCRUK8jnyXygQ11gcW20VDazD0FJZPEDK5S0vyzs2APHdd6WBzojN2GUGydgxEdHYk2Npw'); opacity: 0.4;"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dark via-transparent to-transparent"></div>
+<!-- Floating UI Cards (Decorative) -->
+<div class="absolute bottom-6 left-6 right-6 flex flex-col gap-3">
+<div class="flex items-center gap-4 rounded-lg bg-background-dark/90 p-4 backdrop-blur border border-white/5 shadow-lg">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/20 text-green-500">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="font-bold text-white text-sm">Bulletins Trimestriels</p>
+<p class="text-xs text-gray-400">Génération automatique terminée</p>
+</div>
+</div>
+<div class="flex items-center gap-4 rounded-lg bg-background-dark/90 p-4 backdrop-blur border border-white/5 shadow-lg ml-8">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/20 text-blue-500">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<div>
+<p class="font-bold text-white text-sm">Moyenne Générale</p>
+<p class="text-xs text-gray-400">En hausse de 12% cette année</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-20 bg-surface-dark/30 border-y border-surface-border/50" id="features">
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<div class="mb-16 text-center max-w-3xl mx-auto">
+<h2 class="text-primary font-bold tracking-wide uppercase text-sm mb-3">Fonctionnalités Clés</h2>
+<h3 class="text-3xl font-black text-white sm:text-4xl mb-6">Tout ce dont vous avez besoin pour gérer votre école</h3>
+<p class="text-gray-400">Une suite d'outils puissants conçus pour centraliser l'information et fluidifier la communication entre l'école, les parents et les élèves.</p>
+</div>
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+<!-- Feature 1 -->
+<div class="group relative rounded-2xl border border-surface-border bg-surface-dark p-6 transition-all duration-300 hover:border-primary/50 hover:bg-surface-dark/80 hover:-translate-y-1">
+<div class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-background-dark transition-colors">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<h4 class="mb-2 text-lg font-bold text-white">Gestion des élèves</h4>
+<p class="text-sm leading-relaxed text-gray-400">Centralisez les dossiers administratifs, inscriptions et affectations aux classes en quelques clics.</p>
+</div>
+<!-- Feature 2 -->
+<div class="group relative rounded-2xl border border-surface-border bg-surface-dark p-6 transition-all duration-300 hover:border-primary/50 hover:bg-surface-dark/80 hover:-translate-y-1">
+<div class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-background-dark transition-colors">
+<span class="material-symbols-outlined">monitoring</span>
+</div>
+<h4 class="mb-2 text-lg font-bold text-white">Suivi des notes</h4>
+<p class="text-sm leading-relaxed text-gray-400">Saisie intuitive des notes, calcul automatique des moyennes et tableaux de bord de performance.</p>
+</div>
+<!-- Feature 3 -->
+<div class="group relative rounded-2xl border border-surface-border bg-surface-dark p-6 transition-all duration-300 hover:border-primary/50 hover:bg-surface-dark/80 hover:-translate-y-1">
+<div class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-background-dark transition-colors">
+<span class="material-symbols-outlined">description</span>
+</div>
+<h4 class="mb-2 text-lg font-bold text-white">Bulletins simplifiés</h4>
+<p class="text-sm leading-relaxed text-gray-400">Générez et imprimez des bulletins scolaires complets, personnalisables et conformes aux standards.</p>
+</div>
+<!-- Feature 4 -->
+<div class="group relative rounded-2xl border border-surface-border bg-surface-dark p-6 transition-all duration-300 hover:border-primary/50 hover:bg-surface-dark/80 hover:-translate-y-1">
+<div class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-background-dark transition-colors">
+<span class="material-symbols-outlined">lock_person</span>
+</div>
+<h4 class="mb-2 text-lg font-bold text-white">Accès sécurisé</h4>
+<p class="text-sm leading-relaxed text-gray-400">Portails dédiés pour chaque rôle (Admin, Prof, Parent) avec une sécurité des données de pointe.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-16">
+<div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+<div class="rounded-3xl bg-surface-dark border border-surface-border p-8 md:p-12 text-center relative overflow-hidden">
+<!-- Decor elements -->
+<div class="absolute top-0 right-0 h-40 w-40 bg-primary/10 rounded-bl-full blur-xl"></div>
+<div class="absolute bottom-0 left-0 h-40 w-40 bg-blue-500/10 rounded-tr-full blur-xl"></div>
+<div class="relative z-10">
+<h3 class="text-3xl font-bold text-white mb-4">Prêt à moderniser votre établissement ?</h3>
+<p class="text-gray-400 max-w-2xl mx-auto mb-8">Rejoignez les centaines d'écoles qui font confiance à notre plateforme pour leur gestion quotidienne.</p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+<button class="w-full sm:w-auto flex h-12 items-center justify-center rounded-full bg-primary px-8 text-base font-bold text-background-dark hover:bg-[#2ec568] transition">
+                                Demander une démo
+                            </button>
+<button class="w-full sm:w-auto flex h-12 items-center justify-center rounded-full border border-surface-border bg-transparent px-8 text-base font-bold text-white hover:bg-surface-border transition">
+                                Contacter le support
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="border-t border-surface-border bg-background-dark pt-12 pb-8">
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+<!-- Brand -->
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-border text-primary">
+<span class="material-symbols-outlined text-lg">school</span>
+</div>
+<span class="text-lg font-bold text-white">Gestion Scolaire</span>
+</div>
+<!-- Footer Nav -->
+<div class="flex flex-wrap justify-center gap-x-8 gap-y-2">
+<a class="text-sm text-gray-400 hover:text-primary transition-colors" href="#">Mentions Légales</a>
+<a class="text-sm text-gray-400 hover:text-primary transition-colors" href="#">Politique de Confidentialité</a>
+<a class="text-sm text-gray-400 hover:text-primary transition-colors" href="#">Support</a>
+<a class="text-sm text-gray-400 hover:text-primary transition-colors" href="#">Plan du site</a>
+</div>
+<!-- Socials -->
+<div class="flex gap-4">
+<a class="text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="sr-only">Facebook</span>
+<svg aria-hidden="true" class="h-6 w-6" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fill-rule="evenodd"></path>
+</svg>
+</a>
+<a class="text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="sr-only">Twitter</span>
+<svg aria-hidden="true" class="h-6 w-6" fill="currentColor" viewbox="0 0 24 24">
+<path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+</svg>
+</a>
+</div>
+</div>
+<div class="border-t border-surface-border pt-8 text-center">
+<p class="text-sm text-gray-600">© 2024 Système de Gestion Scolaire. Tous droits réservés.</p>
+</div>
+</div>
+</footer>
+</body></html>

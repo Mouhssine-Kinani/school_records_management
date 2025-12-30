@@ -7,6 +7,7 @@ use App\Repository\ClasseRepository;
 use App\Repository\NoteRepository;
 use App\Entity\Classe;
 use App\Entity\EnseignantMatiereClasse;
+use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,11 +15,25 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
 class AdminController extends AbstractController
 {
+    /**
+     * Get unified menu items for admin sidebar
+     */
+    private function getMenuItems(): array
+    {
+        return [
+            ['id' => 'dashboard', 'route' => 'admin_dashboard', 'icon' => 'dashboard', 'label' => 'Tableau de bord'],
+            ['id' => 'students', 'route' => 'admin_dashboard', 'icon' => 'school', 'label' => 'Dossiers Élèves'],
+            ['id' => 'teachers', 'route' => 'admin_enseignants', 'icon' => 'work', 'label' => 'Enseignants'],
+            ['id' => 'classes', 'route' => 'admin_classes', 'icon' => 'domain', 'label' => 'Classes']
+        ];
+    }
+
     #[Route('/dashboard', name: 'admin_dashboard')]
     public function dashboard(
         UtilisateurRepository $utilisateurRepo,
@@ -39,12 +54,98 @@ class AdminController extends AbstractController
         // Fetch recent activities
         $recentActivities = $noteRepo->getRecentActivities(10);
 
+
+
         return $this->render('admin/dashboard.html.twig', [
             'user' => $this->getUser(),
             'stats' => $stats,
             'monthlyAverages' => $monthlyAverages,
             'recentActivities' => $recentActivities,
+            'menuItems' => $this->getMenuItems(),
+            'activeMenu' => 'dashboard',
+            'roleLabel' => 'Admin Panel',
+            'pageTitle' => 'Tableau de bord',
         ]);
+    }
+
+    #[Route('/enseignants', name: 'admin_enseignants')]
+    public function enseignants(UtilisateurRepository $utilisateurRepo): Response
+    {
+        $enseignants = $utilisateurRepo->findBy(['role' => 'enseignant']);
+
+        return $this->render('admin/enseignant.html.twig', [
+            'user' => $this->getUser(),
+            'enseignants' => $enseignants,
+            'menuItems' => $this->getMenuItems(),
+            'activeMenu' => 'teachers',
+            'roleLabel' => 'Admin Panel',
+            'pageTitle' => 'Gestion des Enseignants',
+        ]);
+    }
+
+    #[Route('/enseignants/create', name: 'admin_create_enseignant', methods: ['POST'])]
+    public function createEnseignant(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo
+    ): JsonResponse {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            // Validation simple
+            if (empty($data['nom']) || empty($data['prenom']) || empty($data['email']) || empty($data['mot_de_passe'])) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Veuillez remplir les champs obligatoires (Nom, Prénom, Email, Mot de passe).'
+                ], 400);
+            }
+
+            // Vérifier si l'email existe déjà
+            $existingUser = $utilisateurRepo->findOneBy(['email' => $data['email']]);
+            if ($existingUser) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Cet email est déjà utilisé par un autre utilisateur.'
+                ], 400);
+            }
+
+            // Création de le'nseignant
+            $enseignant = new Utilisateur();
+            $enseignant->setNom($data['nom']);
+            $enseignant->setPrenom($data['prenom']);
+            $enseignant->setEmail($data['email']);
+            $enseignant->setRole('enseignant'); // Défini comme enseignant
+            
+            // Hash du mot de passe
+            $hashedPassword = $passwordHasher->hashPassword(
+                $enseignant,
+                $data['mot_de_passe']
+            );
+            $enseignant->setMotDePasse($hashedPassword);
+
+            // Champs optionnels
+            if (!empty($data['telephone'])) {
+                $enseignant->setTelephone($data['telephone']);
+            }
+            if (!empty($data['specialite'])) {
+                $enseignant->setSpecialite($data['specialite']);
+            }
+
+            $em->persist($enseignant);
+            $em->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Enseignant ajouté avec succès.'
+            ], 201);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue : ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     #[Route('/classes', name: 'admin_classes')]
@@ -59,21 +160,12 @@ class AdminController extends AbstractController
         $teachers = $utilisateurRepo->findBy(['role' => 'enseignant']);
         $subjects = $matiereRepo->findAll();
         
-        // Define menu items for sidebar
-        $menuItems = [
-            ['id' => 'dashboard', 'label' => 'Tableau de bord', 'icon' => 'dashboard', 'route' => 'admin_dashboard'],
-            ['id' => 'students', 'label' => 'Étudiants', 'icon' => 'school', 'route' => 'admin_dashboard'],
-            ['id' => 'teachers', 'label' => 'Enseignants', 'icon' => 'person', 'route' => 'admin_dashboard'],
-            ['id' => 'classes', 'label' => 'Classes', 'icon' => 'meeting_room', 'route' => 'admin_classes'],
-            ['id' => 'schedule', 'label' => 'Emploi du temps', 'icon' => 'calendar_month', 'route' => 'admin_dashboard'],
-        ];
-
         return $this->render('admin/classes.html.twig', [
             'user' => $this->getUser(),
             'classes' => $classes,
             'teachers' => $teachers,
             'subjects' => $subjects,
-            'menuItems' => $menuItems,
+            'menuItems' => $this->getMenuItems(),
             'activeMenu' => 'classes',
             'roleLabel' => 'Admin Panel',
             'pageTitle' => 'Gestion des Classes',
