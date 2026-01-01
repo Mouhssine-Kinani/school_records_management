@@ -277,6 +277,46 @@ class AdminController extends AbstractController
         }
     }
 
+    #[Route('/enseignants/{id}/delete', name: 'admin_delete_enseignant', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    public function deleteEnseignant(
+        int $id,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo
+    ): JsonResponse {
+        try {
+            $teacher = $utilisateurRepo->find($id);
+            if (!$teacher || $teacher->getRole() !== 'enseignant') {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Enseignant non trouvé.'
+                ], 404);
+            }
+
+            // Find all class assignments for this teacher
+            $assignments = $em->getRepository(EnseignantMatiereClasse::class)->findBy(['enseignant' => $teacher]);
+
+            // Detach teacher from assignments (set to null) instead of deleting them
+            foreach ($assignments as $assignment) {
+                $assignment->setEnseignant(null);
+            }
+
+            // Remove the teacher
+            $em->remove($teacher);
+            $em->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Enseignant supprimé avec succès. Les classes assignées ont été conservées sans enseignant.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la suppression : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     #[Route('/enseignants/create', name: 'admin_create_enseignant', methods: ['POST'])]
     public function createEnseignant(
         Request $request,
