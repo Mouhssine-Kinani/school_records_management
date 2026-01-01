@@ -90,13 +90,21 @@ class AdminController extends AbstractController
         int $id,
         UtilisateurRepository $utilisateurRepo,
         ClasseRepository $classeRepo,
-        \App\Repository\MatiereRepository $matiereRepo
+        \App\Repository\MatiereRepository $matiereRepo,
+        NoteRepository $noteRepo
     ): Response {
         $teacherData = $utilisateurRepo->getTeacherDetailsWithClasses($id);
 
         if (!$teacherData) {
             throw $this->createNotFoundException('Enseignant non trouvé');
         }
+
+        // Fetch recent grades added by this teacher
+        $recentGrades = $noteRepo->findBy(
+            ['enseignant' => $teacherData['teacher']],
+            ['dateNote' => 'DESC'],
+            10
+        );
 
         // Fetch all classes and subjects for the assignment modal
         $allClasses = $classeRepo->findAll();
@@ -106,6 +114,7 @@ class AdminController extends AbstractController
             'user' => $this->getUser(),
             'teacher' => $teacherData['teacher'],
             'classes' => $teacherData['classes'],
+            'recentGrades' => $recentGrades,
             'allClasses' => $allClasses,
             'subjects' => $subjects,
             'menuItems' => $this->getMenuItems(),
