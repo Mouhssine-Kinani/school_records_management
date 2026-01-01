@@ -1,0 +1,875 @@
+{% extends 'base.html.twig' %} {% block title %}Détails Enseignant - Système
+Scolaire{% endblock %} {% block body %}
+<div class="flex h-screen w-full overflow-hidden">
+    <!-- Sidebar -->
+    {% include 'components/_sidebar.html.twig' %}
+
+    <div
+        class="flex-1 flex flex-col min-w-0 bg-background-light dark:bg-background-dark overflow-hidden"
+    >
+        <!-- Navbar -->
+        {% include 'components/_navbar.html.twig' %}
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto w-full">
+            <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-8">
+                <!-- Hero Section: Teacher Profile Header -->
+                <section
+                    class="bg-white dark:bg-surface-dark rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group border border-slate-200 dark:border-[#29382f]"
+                >
+                    <!-- Decorative blurred background element -->
+                    <div
+                        class="absolute top-0 right-0 -mt-20 -mr-20 size-64 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors"
+                    ></div>
+
+                    <div
+                        class="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-6 z-10"
+                    >
+                        <div class="relative">
+                            <div
+                                class="size-32 rounded-full border-4 border-slate-200 dark:border-[#253029] bg-primary text-background-dark font-bold text-4xl flex items-center justify-center shadow-xl"
+                            >
+                                {{ teacher.prenom|first|upper }}{{
+                                teacher.nom|first|upper }}
+                            </div>
+                            <div
+                                class="absolute bottom-2 right-2 size-5 bg-primary rounded-full border-4 border-white dark:border-surface-dark shadow-sm"
+                                title="Actif"
+                            ></div>
+                        </div>
+                        <div class="text-center sm:text-left">
+                            <h2
+                                class="text-3xl font-bold text-slate-900 dark:text-white mb-1"
+                            >
+                                {{ teacher.nom }}, {{ teacher.prenom }}
+                            </h2>
+                            <p class="text-primary font-medium text-lg mb-2">
+                                {% if teacher.specialite %} Enseignant de {{
+                                teacher.specialite }} {% else %} Enseignant {%
+                                endif %}
+                            </p>
+                            <div
+                                class="flex flex-wrap justify-center sm:justify-start gap-3"
+                            >
+                                <span
+                                    class="px-3 py-1 rounded-full bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-[#29382f] text-xs text-slate-600 dark:text-[#9eb7a8] font-medium"
+                                >
+                                    ID: #T-{{ "now"|date("Y") }}-{{
+                                    teacher.id|format('%03d') }}
+                                </span>
+                                <span
+                                    class="px-3 py-1 rounded-full bg-slate-100 dark:bg-surface-dark border border-slate-200 dark:border-[#29382f] text-xs text-slate-600 dark:text-[#9eb7a8] font-medium"
+                                >
+                                    {{ classes|length }} classes assignées
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="flex flex-col sm:flex-row w-full md:w-auto gap-3 z-10"
+                    >
+                        <button
+                            id="openEditTeacherModal"
+                            class="flex-1 sm:flex-none h-11 px-6 rounded-full bg-primary text-background-dark font-bold text-sm hover:bg-[#2bc766] transition-colors flex items-center justify-center gap-2"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >edit</span
+                            >
+                            <span>Modifier</span>
+                        </button>
+                        <a
+                            href="{{ path('admin_enseignants') }}"
+                            class="flex-1 sm:flex-none h-11 px-6 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-900 dark:text-white font-medium text-sm hover:bg-slate-200 dark:hover:bg-[#35453c] border border-slate-200 dark:border-[#29382f] transition-colors flex items-center justify-center gap-2"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >arrow_back</span
+                            >
+                            <span>Retour</span>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Grid Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left Column: Personal Info (4 cols) -->
+                    <div class="lg:col-span-4 flex flex-col gap-6">
+                        <!-- Info Card -->
+                        <div
+                            class="bg-white dark:bg-surface-dark rounded-3xl p-6 border border-slate-200 dark:border-[#29382f]"
+                        >
+                            <div class="flex items-center gap-2 mb-6">
+                                <span
+                                    class="material-symbols-outlined text-primary"
+                                    >person</span
+                                >
+                                <h3
+                                    class="text-lg font-bold text-slate-900 dark:text-white"
+                                >
+                                    Info Personnelles
+                                </h3>
+                            </div>
+                            <div class="flex flex-col gap-5">
+                                <div class="group">
+                                    <p
+                                        class="text-xs font-medium text-slate-500 dark:text-[#9eb7a8] uppercase tracking-wider mb-1"
+                                    >
+                                        Email
+                                    </p>
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
+                                        <p
+                                            class="text-slate-900 dark:text-white text-sm font-medium"
+                                        >
+                                            {{ teacher.email }}
+                                        </p>
+                                        <button
+                                            class="opacity-0 group-hover:opacity-100 text-slate-500 dark:text-[#9eb7a8] hover:text-primary transition-opacity"
+                                        >
+                                            <span
+                                                class="material-symbols-outlined text-[18px]"
+                                                >content_copy</span
+                                            >
+                                        </button>
+                                    </div>
+                                </div>
+                                <div
+                                    class="h-px bg-slate-200 dark:bg-[#29382f]"
+                                ></div>
+                                <div>
+                                    <p
+                                        class="text-xs font-medium text-slate-500 dark:text-[#9eb7a8] uppercase tracking-wider mb-1"
+                                    >
+                                        Téléphone
+                                    </p>
+                                    <p
+                                        class="text-slate-900 dark:text-white text-sm font-medium"
+                                    >
+                                        {% if teacher.telephone %} {{
+                                        teacher.telephone }} {% else %}
+                                        <span
+                                            class="text-slate-400 dark:text-[#9eb7a8]/50 italic"
+                                            >Non renseigné</span
+                                        >
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div
+                                    class="h-px bg-slate-200 dark:bg-[#29382f]"
+                                ></div>
+                                <div>
+                                    <p
+                                        class="text-xs font-medium text-slate-500 dark:text-[#9eb7a8] uppercase tracking-wider mb-1"
+                                    >
+                                        Date d'inscription
+                                    </p>
+                                    <p
+                                        class="text-slate-900 dark:text-white text-sm font-medium"
+                                    >
+                                        {{ teacher.dateCreation|date('d F Y') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subjects / Competencies -->
+                        <div
+                            class="bg-white dark:bg-surface-dark rounded-3xl p-6 border border-slate-200 dark:border-[#29382f]"
+                        >
+                            <div class="flex items-center gap-2 mb-4">
+                                <span
+                                    class="material-symbols-outlined text-primary"
+                                    >school</span
+                                >
+                                <h3
+                                    class="text-lg font-bold text-slate-900 dark:text-white"
+                                >
+                                    Matières Enseignées
+                                </h3>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                {% set uniqueSubjects = [] %} {% for classData
+                                in classes %} {% if classData.matiere.libelle
+                                not in uniqueSubjects %} {% set uniqueSubjects =
+                                uniqueSubjects|merge([classData.matiere.libelle])
+                                %}
+                                <span
+                                    class="px-4 py-2 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-900 dark:text-white text-sm font-medium border border-slate-200 dark:border-[#29382f] hover:border-primary/50 transition-colors cursor-default"
+                                >
+                                    {{ classData.matiere.libelle }}
+                                </span>
+                                {% endif %} {% endfor %} {% if
+                                uniqueSubjects|length == 0 %}
+                                <p
+                                    class="text-slate-400 dark:text-[#9eb7a8]/50 text-sm italic"
+                                >
+                                    Aucune matière assignée
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Classes (8 cols) -->
+                    <div class="lg:col-span-8 flex flex-col gap-6">
+                        <!-- Assigned Classes Grid -->
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3
+                                    class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-primary"
+                                        >class</span
+                                    >
+                                    Classes Assignées
+                                </h3>
+                            </div>
+
+                            {% if classes|length > 0 %}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {% for classData in classes %}
+                                <!-- Class Card -->
+                                <div
+                                    class="bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-[#202b25] transition-colors rounded-3xl p-5 border border-slate-200 dark:border-[#29382f] group relative overflow-hidden"
+                                >
+                                    <div
+                                        class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full pointer-events-none"
+                                    ></div>
+
+                                    <div
+                                        class="flex justify-between items-start mb-4"
+                                    >
+                                        <div
+                                            class="size-12 rounded-2xl bg-slate-100 dark:bg-surface-dark flex items-center justify-center text-slate-900 dark:text-white border border-slate-200 dark:border-[#29382f]"
+                                        >
+                                            <span
+                                                class="material-symbols-outlined"
+                                                >functions</span
+                                            >
+                                        </div>
+                                        <span
+                                            class="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold"
+                                        >
+                                            {{ classData.anneeScolaire }}
+                                        </span>
+                                    </div>
+
+                                    <h4
+                                        class="text-lg font-bold text-slate-900 dark:text-white"
+                                    >
+                                        {{ classData.classe.nom }}
+                                    </h4>
+                                    <p
+                                        class="text-slate-500 dark:text-[#9eb7a8] text-sm mb-4"
+                                    >
+                                        {{ classData.matiere.libelle }} • Niveau
+                                        {{ classData.classe.niveau }}
+                                    </p>
+
+                                    <div
+                                        class="flex items-center justify-between mt-auto"
+                                    >
+                                        <span
+                                            class="text-sm font-medium text-slate-900 dark:text-white"
+                                        >
+                                            {{ classData.studentCount }} Élève{{
+                                            classData.studentCount > 1 ? 's' :
+                                            '' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                <button
+                                    id="openAssignClassModal"
+                                    class="bg-[#151f19] hover:bg-surface border-2 border-dashed border-surface-highlight hover:border-primary/50 transition-all rounded-3xl p-5 flex flex-col items-center justify-center gap-3 group h-full min-h-[180px]"
+                                >
+                                    <div
+                                        class="size-12 rounded-full bg-surface-highlight group-hover:bg-primary group-hover:text-background-dark text-text-secondary transition-colors flex items-center justify-center"
+                                    >
+                                        <span class="material-symbols-outlined"
+                                            >add</span
+                                        >
+                                    </div>
+                                    <span
+                                        class="font-medium text-text-secondary group-hover:text-white"
+                                        >Assigner une nouvelle classe</span
+                                    >
+                                </button>
+                            </div>
+                            {% else %}
+                            <div
+                                class="bg-white dark:bg-surface-dark rounded-3xl p-8 border border-slate-200 dark:border-[#29382f] text-center"
+                            >
+                                <div
+                                    class="flex flex-col items-center gap-3 text-slate-400 dark:text-[#9eb7a8]/50"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-5xl"
+                                        >class</span
+                                    >
+                                    <p class="text-sm">
+                                        Aucune classe assignée pour cet
+                                        enseignant
+                                    </p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Activity Log Placeholder -->
+                        <div
+                            class="bg-white dark:bg-surface-dark rounded-3xl p-6 border border-slate-200 dark:border-[#29382f]"
+                        >
+                            <div class="flex items-center justify-between mb-6">
+                                <h3
+                                    class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-primary"
+                                        >history</span
+                                    >
+                                    Activité Récente
+                                </h3>
+                            </div>
+                            <div
+                                class="flex flex-col items-center gap-3 py-8 text-slate-400 dark:text-[#9eb7a8]/50"
+                            >
+                                <span class="material-symbols-outlined text-5xl"
+                                    >event_busy</span
+                                >
+                            {% if recentGrades is not empty %}
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 dark:border-[#29382f]">
+                                            <th class="py-3 pr-4 text-xs font-bold text-slate-500 dark:text-[#9eb7a8] uppercase">Date</th>
+                                            <th class="py-3 px-4 text-xs font-bold text-slate-500 dark:text-[#9eb7a8] uppercase">Élève</th>
+                                            <th class="py-3 px-4 text-xs font-bold text-slate-500 dark:text-[#9eb7a8] uppercase">Matière</th>
+                                            <th class="py-3 px-4 text-xs font-bold text-slate-500 dark:text-[#9eb7a8] uppercase">Type</th>
+                                            <th class="py-3 pl-4 text-xs font-bold text-slate-500 dark:text-[#9eb7a8] uppercase text-right">Note</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200 dark:divide-[#29382f]">
+                                        {% for grade in recentGrades %}
+                                        <tr class="hover:bg-slate-50 dark:hover:bg-[#25332b] transition-colors">
+                                            <td class="py-3 pr-4 text-sm text-slate-600 dark:text-slate-300">
+                                                {{ grade.dateNote|date('d/m/Y') }}
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="size-6 rounded-full bg-primary/20 text-primary text-[10px] font-bold flex items-center justify-center">
+                                                        {{ grade.eleve.prenom|first }}{{ grade.eleve.nom|first }}
+                                                    </div>
+                                                    <span class="text-sm font-medium text-slate-900 dark:text-white">
+                                                        {{ grade.eleve.prenom }} {{ grade.eleve.nom }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4 text-sm text-slate-600 dark:text-slate-300">
+                                                {{ grade.matiere.libelle }}
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <span class="inline-flex px-2 py-0.5 rounded textxs font-medium {{ grade.type == 'Examen' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' }}">
+                                                    {{ grade.type }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3 pl-4 text-right">
+                                                <span class="font-bold {{ grade.valeur >= 10 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">
+                                                    {{ grade.valeur }}/20
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-8">
+                                <div class="size-12 rounded-full bg-slate-100 dark:bg-[#25332b] text-slate-400 dark:text-[#5a7063] flex items-center justify-center mx-auto mb-3">
+                                    <span class="material-symbols-outlined">assignment_late</span>
+                                </div>
+                                <p class="text-slate-500 dark:text-[#9eb7a8] text-sm">
+                                    Aucune note ajoutée récemment.
+                                </p>
+                            </div>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+{# Toast Notification Container #}
+<div
+    id="toastContainer"
+    class="fixed top-4 right-4 z-[100] flex flex-col gap-3 pointer-events-none"
+></div>
+
+{# Assign Class Modal #}
+<div
+    id="assignClassModal"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
+>
+    <div
+        class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+    >
+        {# Modal Header #}
+        <div
+            class="sticky top-0 bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-[#29382f] p-6 flex items-center justify-between z-10"
+        >
+            <div class="flex items-center gap-3">
+                <div
+                    class="size-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg"
+                >
+                    <span class="material-symbols-outlined">add_circle</span>
+                </div>
+                <div>
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white"
+                    >
+                        Assigner une Classe
+                    </h2>
+                    <p class="text-sm text-[#9eb7a8]">
+                        Assigner une classe existante à {{ teacher.prenom }} {{
+                        teacher.nom }}
+                    </p>
+                </div>
+            </div>
+            <button
+                id="closeAssignModalBtn"
+                class="text-[#9eb7a8] hover:text-slate-900 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+            >
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        {# Modal Body #}
+        <form id="assignClassForm" class="p-6 space-y-6">
+            {# Class Selection #}
+            <div class="space-y-4">
+                <h3
+                    class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"
+                >
+                    <span class="material-symbols-outlined text-primary"
+                        >domain</span
+                    >
+                    Sélectionner une classe
+                </h3>
+
+                <div>
+                    <label
+                        for="classeId"
+                        class="block text-sm font-bold text-slate-900 dark:text-white mb-2"
+                    >
+                        Classe <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select
+                            id="classeId"
+                            name="classe_id"
+                            required
+                            class="appearance-none w-full bg-slate-50 dark:bg-[#122017] text-slate-900 dark:text-white border border-slate-200 dark:border-[#29382f] rounded-lg py-2.5 pl-4 pr-10 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer"
+                        >
+                            <option value="">Sélectionner une classe</option>
+                            {% for classe in allClasses %}
+                            <option value="{{ classe.id }}">
+                                {{ classe.nom }} - {{ classe.niveau }} ({{
+                                classe.anneeScolaire }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#9eb7a8]"
+                        >
+                            <span class="material-symbols-outlined text-sm"
+                                >expand_more</span
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Subject Selection #}
+            <div
+                class="space-y-4 pt-4 border-t border-slate-200 dark:border-[#29382f]"
+            >
+                <h3
+                    class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"
+                >
+                    <span class="material-symbols-outlined text-primary"
+                        >menu_book</span
+                    >
+                    Matière à enseigner
+                </h3>
+
+                <div>
+                    <label
+                        for="matiereId"
+                        class="block text-sm font-bold text-slate-900 dark:text-white mb-2"
+                    >
+                        Matière <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select
+                            id="matiereId"
+                            name="matiere_id"
+                            required
+                            class="appearance-none w-full bg-slate-50 dark:bg-[#122017] text-slate-900 dark:text-white border border-slate-200 dark:border-[#29382f] rounded-lg py-2.5 pl-4 pr-10 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer"
+                        >
+                            <option value="">Sélectionner une matière</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}">
+                                {{ subject.libelle }} (Coef: {{
+                                subject.coefficient }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#9eb7a8]"
+                        >
+                            <span class="material-symbols-outlined text-sm"
+                                >expand_more</span
+                            >
+                        </div>
+                    </div>
+                    <p class="mt-2 text-xs text-[#9eb7a8]">
+                        <span
+                            class="material-symbols-outlined text-[14px] align-middle"
+                            >info</span
+                        >
+                        La matière que l'enseignant enseignera pour cette classe
+                    </p>
+                </div>
+            </div>
+
+            {# School Year #}
+            <div
+                class="space-y-4 pt-4 border-t border-slate-200 dark:border-[#29382f]"
+            >
+                <h3
+                    class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"
+                >
+                    <span class="material-symbols-outlined text-primary"
+                        >event</span
+                    >
+                    Année scolaire
+                </h3>
+
+                <div>
+                    <label
+                        for="anneeScolaire"
+                        class="block text-sm font-bold text-slate-900 dark:text-white mb-2"
+                    >
+                        Année scolaire <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="anneeScolaire"
+                        name="annee_scolaire"
+                        required
+                        class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#5a7063] focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="Ex: 2024-2025"
+                        value="2024-2025"
+                    />
+                </div>
+            </div>
+
+            {# Modal Footer #}
+            <div
+                class="flex gap-3 pt-6 border-t border-slate-200 dark:border-[#29382f]"
+            >
+                <button
+                    type="button"
+                    id="cancelAssignBtn"
+                    class="flex-1 px-6 py-2.5 rounded-lg border border-slate-200 dark:border-[#29382f] text-slate-900 dark:text-white font-bold hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                >
+                    Annuler
+                </button>
+                <button
+                    type="submit"
+                    id="submitAssignBtn"
+                    class="flex-1 px-6 py-2.5 rounded-lg bg-primary text-black font-bold hover:bg-white transition-colors shadow-[0_0_20px_rgba(56,224,123,0.3)] hover:shadow-[0_0_30px_rgba(56,224,123,0.5)] flex items-center justify-center gap-2"
+                >
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>Assigner</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Edit Teacher Modal #}
+<div id="editTeacherModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="sticky top-0 bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-[#29382f] p-6 flex items-center justify-between z-10">
+            <div class="flex items-center gap-3">
+                <div class="size-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                    <span class="material-symbols-outlined">edit</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900 dark:text-white">Modifier l'Enseignant</h2>
+                    <p class="text-sm text-[#9eb7a8]">Modifier les informations de {{ teacher.prenom }} {{ teacher.nom }}</p>
+                </div>
+            </div>
+            <button id="closeEditModalBtn" class="text-[#9eb7a8] hover:text-slate-900 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="editTeacherForm" class="p-6 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="editNom" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Nom <span class="text-red-500">*</span></label>
+                    <input type="text" id="editNom" name="nom" required value="{{ teacher.nom }}"
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                </div>
+                <div>
+                    <label for="editPrenom" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Prénom <span class="text-red-500">*</span></label>
+                    <input type="text" id="editPrenom" name="prenom" required value="{{ teacher.prenom }}"
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                </div>
+            </div>
+
+            <div>
+                <label for="editEmail" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Email <span class="text-red-500">*</span></label>
+                <input type="email" id="editEmail" name="email" required value="{{ teacher.email }}"
+                       class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="editTelephone" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Téléphone</label>
+                    <input type="tel" id="editTelephone" name="telephone" value="{{ teacher.telephone }}"
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                </div>
+                <div>
+                    <label for="editSpecialite" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Spécialité</label>
+                    <input type="text" id="editSpecialite" name="specialite" value="{{ teacher.specialite }}"
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                </div>
+            </div>
+            
+            <div class="pt-4 border-t border-slate-200 dark:border-[#29382f]">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">lock</span>
+                    Sécurité (Laisser vide pour ne pas changer)
+                </h3>
+                <div>
+                    <label for="editPassword" class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Nouveau mot de passe</label>
+                    <input type="password" id="editPassword" name="mot_de_passe"
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#122017] border border-slate-200 dark:border-[#29382f] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-6 border-t border-slate-200 dark:border-[#29382f]">
+                <button type="button" id="cancelEditBtn" 
+                        class="flex-1 px-6 py-2.5 rounded-lg border border-slate-200 dark:border-[#29382f] text-slate-900 dark:text-white font-bold hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                    Annuler
+                </button>
+                <button type="submit" id="submitEditBtn"
+                        class="flex-1 px-6 py-2.5 rounded-lg bg-primary text-black font-bold hover:bg-white transition-colors shadow-[0_0_20px_rgba(56,224,123,0.3)] hover:shadow-[0_0_30px_rgba(56,224,123,0.5)] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">save</span>
+                    <span>Enregistrer</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const assignModal = document.getElementById('assignClassModal');
+        const openAssignModalBtn = document.getElementById('openAssignClassModal');
+        const closeAssignModalBtn = document.getElementById('closeAssignModalBtn');
+        const cancelAssignBtn = document.getElementById('cancelAssignBtn');
+        const assignClassForm = document.getElementById('assignClassForm');
+        const submitAssignBtn = document.getElementById('submitAssignBtn');
+        const toastContainer = document.getElementById('toastContainer');
+
+        // Edit Modal Elements
+        const editModal = document.getElementById('editTeacherModal');
+        const openEditModalBtn = document.getElementById('openEditTeacherModal');
+        const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const editForm = document.getElementById('editTeacherForm');
+        const submitEditBtn = document.getElementById('submitEditBtn');
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto transform transition-all duration-300 translate-x-full opacity-0 flex items-start gap-3 p-4 rounded-xl shadow-2xl border max-w-md ${
+                type === 'success'
+                    ? 'bg-white dark:bg-surface-dark border-primary/20'
+                    : 'bg-white dark:bg-surface-dark border-red-500/20'
+            }`;
+
+            const icon = type === 'success' ? 'check_circle' : 'error';
+            const iconColor = type === 'success' ? 'text-primary' : 'text-red-500';
+            const titleColor = type === 'success' ? 'text-primary' : 'text-red-500';
+            const title = type === 'success' ? 'Succès' : 'Erreur';
+
+            toast.innerHTML = `
+                <div class="flex-shrink-0">
+                    <span class="material-symbols-outlined ${iconColor} text-2xl">${icon}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold ${titleColor}">${title}</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 mt-0.5">${message}</p>
+                </div>
+                <button class="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" onclick="this.parentElement.remove()">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full', 'opacity-0');
+            }, 10);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Open specific modal
+        function openModal(modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close specific modal
+        function closeModal(modal, form = null) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            if (form) form.reset();
+        }
+
+        // Assign Modal Listeners
+        if (openAssignModalBtn) {
+            openAssignModalBtn.addEventListener('click', () => {
+                openModal(assignModal);
+                // Reset school year to default
+                if(document.getElementById('anneeScolaire'))
+                     document.getElementById('anneeScolaire').value = '2024-2025';
+            });
+        }
+        closeAssignModalBtn.addEventListener('click', () => closeModal(assignModal, assignClassForm));
+        cancelAssignBtn.addEventListener('click', () => closeModal(assignModal, assignClassForm));
+
+        // Edit Modal Listeners
+        if (openEditModalBtn) {
+            openEditModalBtn.addEventListener('click', () => openModal(editModal));
+        }
+        if (closeEditModalBtn) {
+            closeEditModalBtn.addEventListener('click', () => closeModal(editModal, editForm));
+        }
+        if (cancelEditBtn) {
+            cancelEditBtn.addEventListener('click', () => closeModal(editModal, editForm));
+        }
+
+        // Close modals when clicking outside
+        [assignModal, editModal].forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal(modal, modal === assignModal ? assignClassForm : editForm);
+                }
+            });
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (!assignModal.classList.contains('hidden')) {
+                    closeModal(assignModal, assignClassForm);
+                }
+                if (!editModal.classList.contains('hidden')) {
+                    closeModal(editModal, editForm);
+                }
+            }
+        });
+
+        // Assign Form Submission
+        assignClassForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            submitAssignBtn.disabled = true;
+            submitAssignBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span>Assignment en cours...</span>';
+            
+            const formData = new FormData(assignClassForm);
+            const data = {
+                classe_id: formData.get('classe_id'),
+                matiere_id: formData.get('matiere_id'),
+                annee_scolaire: formData.get('annee_scolaire')
+            };
+            
+            try {
+                const response = await fetch('{{ path('admin_assign_class_to_teacher', {'teacherId': teacher.id}) }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showToast(result.message, 'success');
+                    closeModal(assignModal, assignClassForm);
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast(result.message || 'Une erreur est survenue lors de l\'assignation.', 'error');
+                    submitAssignBtn.disabled = false;
+                    submitAssignBtn.innerHTML = '<span class="material-symbols-outlined">add_circle</span><span>Assigner</span>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Une erreur réseau est survenue.', 'error');
+                submitAssignBtn.disabled = false;
+                submitAssignBtn.innerHTML = '<span class="material-symbols-outlined">add_circle</span><span>Assigner</span>';
+            }
+        });
+
+        // Edit Form Submission
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            submitEditBtn.disabled = true;
+            submitEditBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span>Enregistrement...</span>';
+            
+            const formData = new FormData(editForm);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('{{ path('admin_update_enseignant', {'id': teacher.id}) }}', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showToast(result.message, 'success');
+                    closeModal(editModal, editForm);
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast(result.message || 'Une erreur est survenue.', 'error');
+                    submitEditBtn.disabled = false;
+                    submitEditBtn.innerHTML = '<span class="material-symbols-outlined">save</span><span>Enregistrer</span>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Une erreur réseau est survenue.', 'error');
+                submitEditBtn.disabled = false;
+                submitEditBtn.innerHTML = '<span class="material-symbols-outlined">save</span><span>Enregistrer</span>';
+            }
+        });
+    });
+</script>
+{% endblock %}

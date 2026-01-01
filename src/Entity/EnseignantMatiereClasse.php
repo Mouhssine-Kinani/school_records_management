@@ -16,7 +16,7 @@ class EnseignantMatiereClasse
     private ?int $id = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Utilisateur $enseignant = null;
 
     #[ORM\ManyToOne]

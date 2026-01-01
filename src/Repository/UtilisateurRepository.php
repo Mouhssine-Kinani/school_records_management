@@ -25,4 +25,52 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * Get teacher details with their assigned classes and student counts
+     */
+    public function getTeacherDetailsWithClasses(int $teacherId): ?array
+    {
+        // First, get the teacher
+        $teacher = $this->find($teacherId);
+        
+        if (!$teacher || $teacher->getRole() !== 'enseignant') {
+            return null;
+        }
+
+        // Now get all classes with student counts using DQL
+        $query = $this->getEntityManager()->createQuery('
+            SELECT emc, c, m, COUNT(DISTINCT i.id) as studentCount
+            FROM App\Entity\EnseignantMatiereClasse emc
+            JOIN emc.classe c
+            JOIN emc.matiere m
+            LEFT JOIN App\Entity\Inscription i WITH i.classe = c
+            WHERE emc.enseignant = :teacherId
+            GROUP BY emc.id, c.id, m.id
+            ORDER BY c.nom ASC
+        ')->setParameter('teacherId', $teacherId);
+
+        $results = $query->getResult();
+        
+        $classes = [];
+        foreach ($results as $row) {
+            // $row[0] is the EnseignantMatiereClasse entity
+            // $row['studentCount'] is the count
+            $emc = $row[0];
+            $classe = $emc->getClasse();
+            $matiere = $emc->getMatiere();
+            
+            $classes[] = [
+                'classe' => $classe,
+                'matiere' => $matiere,
+                'studentCount' => (int) $row['studentCount'],
+                'anneeScolaire' => $emc->getAnneeScolaire()
+            ];
+        }
+
+        return [
+            'teacher' => $teacher,
+            'classes' => $classes
+        ];
+    }
 }
