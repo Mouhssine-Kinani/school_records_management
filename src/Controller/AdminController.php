@@ -201,6 +201,82 @@ class AdminController extends AbstractController
         }
     }
 
+    #[Route('/enseignants/{id}/update', name: 'admin_update_enseignant', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    public function updateEnseignant(
+        int $id,
+        Request $request,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo,
+        UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            // Find teacher
+            $teacher = $utilisateurRepo->find($id);
+            if (!$teacher || $teacher->getRole() !== 'enseignant') {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Enseignant non trouvé.'
+                ], 404);
+            }
+
+            // Validate required fields
+            if (empty($data['nom']) || empty($data['prenom']) || empty($data['email'])) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Les champs Nom, Prénom et Email sont obligatoires.'
+                ], 400);
+            }
+
+            // Check if email is already used by another user
+            if ($data['email'] !== $teacher->getEmail()) {
+                $existingUser = $utilisateurRepo->findOneBy(['email' => $data['email']]);
+                if ($existingUser) {
+                    return new JsonResponse([
+                        'success' => false,
+                        'message' => 'Cet email est déjà utilisé par un autre utilisateur.'
+                    ], 400);
+                }
+            }
+
+            // Update teacher information
+            $teacher->setNom($data['nom']);
+            $teacher->setPrenom($data['prenom']);
+            $teacher->setEmail($data['email']);
+
+            // Update optional fields
+            if (isset($data['telephone'])) {
+                $teacher->setTelephone($data['telephone'] ?: null);
+            }
+            if (isset($data['specialite'])) {
+                $teacher->setSpecialite($data['specialite'] ?: null);
+            }
+
+            // Update password if provided
+            if (!empty($data['mot_de_passe'])) {
+                $hashedPassword = $passwordHasher->hashPassword(
+                    $teacher,
+                    $data['mot_de_passe']
+                );
+                $teacher->setMotDePasse($hashedPassword);
+            }
+
+            $em->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Enseignant modifié avec succès.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     #[Route('/enseignants/create', name: 'admin_create_enseignant', methods: ['POST'])]
     public function createEnseignant(
         Request $request,
