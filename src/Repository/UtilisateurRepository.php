@@ -31,49 +31,41 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
      */
     public function getTeacherDetailsWithClasses(int $teacherId): ?array
     {
-        $qb = $this->createQueryBuilder('u')
-            ->select('u', 'emc', 'c', 'm', 'COUNT(DISTINCT i.id) as studentCount')
-            ->leftJoin('App\Entity\EnseignantMatiereClasse', 'emc', 'WITH', 'emc.enseignant = u.id')
-            ->leftJoin('emc.classe', 'c')
-            ->leftJoin('emc.matiere', 'm')
-            ->leftJoin('App\Entity\Inscription', 'i', 'WITH', 'i.classe = c.id')
-            ->where('u.id = :teacherId')
-            ->andWhere('u.role = :role')
-            ->setParameter('teacherId', $teacherId)
-            ->setParameter('role', 'enseignant')
-            ->groupBy('u.id, emc.id, c.id, m.id')
-            ->getQuery();
-
-        $results = $qb->getResult();
+        // First, get the teacher
+        $teacher = $this->find($teacherId);
         
-        if (empty($results)) {
+        if (!$teacher || $teacher->getRole() !== 'enseignant') {
             return null;
         }
 
-        // Extract teacher and organize classes
-        $teacher = null;
-        $classes = [];
+        // Now get all classes with student counts using DQL
+        $query = $this->getEntityManager()->createQuery('
+            SELECT emc, c, m, COUNT(DISTINCT i.id) as studentCount
+            FROM App\Entity\EnseignantMatiereClasse emc
+            JOIN emc.classe c
+            JOIN emc.matiere m
+            LEFT JOIN App\Entity\Inscription i WITH i.classe = c
+            WHERE emc.enseignant = :teacherId
+            GROUP BY emc.id, c.id, m.id
+            ORDER BY c.nom ASC
+        ')->setParameter('teacherId', $teacherId);
+
+        $results = $query->getResult();
         
-        foreach ($results as $result) {
-            if ($teacher === null) {
-                $teacher = $result[0];
-            }
+        $classes = [];
+        foreach ($results as $row) {
+            // $row[0] is the EnseignantMatiereClasse entity
+            // $row['studentCount'] is the count
+            $emc = $row[0];
+            $classe = $emc->getClasse();
+            $matiere = $emc->getMatiere();
             
-            // Only add classes that actually exist
-            if (isset($result['emc']) && $result['emc'] !== null) {
-                $emc = $result['emc'];
-                $classe = $emc->getClasse();
-                $matiere = $emc->getMatiere();
-                
-                if ($classe && $matiere) {
-                    $classes[] = [
-                        'classe' => $classe,
-                        'matiere' => $matiere,
-                        'studentCount' => $result['studentCount'] ?? 0,
-                        'anneeScolaire' => $emc->getAnneeScolaire()
-                    ];
-                }
-            }
+            $classes[] = [
+                'classe' => $classe,
+                'matiere' => $matiere,
+                'studentCount' => (int) $row['studentCount'],
+                'anneeScolaire' => $emc->getAnneeScolaire()
+            ];
         }
 
         return [

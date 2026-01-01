@@ -111,10 +111,10 @@
                             <div class="flex flex-wrap gap-2">
                                 {% set uniqueSubjects = [] %}
                                 {% for classData in classes %}
-                                    {% if classData.matiere.nom not in uniqueSubjects %}
-                                        {% set uniqueSubjects = uniqueSubjects|merge([classData.matiere.nom]) %}
+                                    {% if classData.matiere.libelle not in uniqueSubjects %}
+                                        {% set uniqueSubjects = uniqueSubjects|merge([classData.matiere.libelle]) %}
                                         <span class="px-4 py-2 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-900 dark:text-white text-sm font-medium border border-slate-200 dark:border-[#29382f] hover:border-primary/50 transition-colors cursor-default">
-                                            {{ classData.matiere.nom }}
+                                            {{ classData.matiere.libelle }}
                                         </span>
                                     {% endif %}
                                 {% endfor %}
@@ -157,7 +157,7 @@
                                             {{ classData.classe.nom }}
                                         </h4>
                                         <p class="text-slate-500 dark:text-[#9eb7a8] text-sm mb-4">
-                                            {{ classData.matiere.nom }} • Niveau {{ classData.classe.niveau }}
+                                            {{ classData.matiere.libelle }} • Niveau {{ classData.classe.niveau }}
                                         </p>
                                         
                                         <div class="flex items-center justify-between mt-auto">
