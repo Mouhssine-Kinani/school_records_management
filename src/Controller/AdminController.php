@@ -86,23 +86,119 @@ class AdminController extends AbstractController
     }
 
     #[Route('/enseignants/{id}', name: 'admin_enseignant_details', requirements: ['id' => '\d+'])]
-    public function enseignantDetails(int $id, UtilisateurRepository $utilisateurRepo): Response
-    {
+    public function enseignantDetails(
+        int $id,
+        UtilisateurRepository $utilisateurRepo,
+        ClasseRepository $classeRepo,
+        \App\Repository\MatiereRepository $matiereRepo
+    ): Response {
         $teacherData = $utilisateurRepo->getTeacherDetailsWithClasses($id);
 
         if (!$teacherData) {
             throw $this->createNotFoundException('Enseignant non trouvé');
         }
 
+        // Fetch all classes and subjects for the assignment modal
+        $allClasses = $classeRepo->findAll();
+        $subjects = $matiereRepo->findAll();
+
         return $this->render('admin/enseignantDetails.html.twig', [
             'user' => $this->getUser(),
             'teacher' => $teacherData['teacher'],
             'classes' => $teacherData['classes'],
+            'allClasses' => $allClasses,
+            'subjects' => $subjects,
             'menuItems' => $this->getMenuItems(),
             'activeMenu' => 'teachers',
             'roleLabel' => 'Admin Panel',
             'pageTitle' => 'Détails Enseignant',
         ]);
+    }
+
+    #[Route('/enseignants/{teacherId}/assign-class', name: 'admin_assign_class_to_teacher', requirements: ['teacherId' => '\d+'], methods: ['POST'])]
+    public function assignClassToTeacher(
+        int $teacherId,
+        Request $request,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo,
+        ClasseRepository $classeRepo,
+        \App\Repository\MatiereRepository $matiereRepo
+    ): JsonResponse {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            // Validate required fields
+            if (empty($data['classe_id']) || empty($data['matiere_id']) || empty($data['annee_scolaire'])) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Tous les champs sont obligatoires.'
+                ], 400);
+            }
+
+            // Find and validate teacher
+            $teacher = $utilisateurRepo->find($teacherId);
+            if (!$teacher || $teacher->getRole() !== 'enseignant') {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Enseignant invalide.'
+                ], 400);
+            }
+
+            // Find and validate class
+            $classe = $classeRepo->find($data['classe_id']);
+            if (!$classe) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Classe invalide.'
+                ], 400);
+            }
+
+            // Find and validate subject
+            $subject = $matiereRepo->find($data['matiere_id']);
+            if (!$subject) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Matière invalide.'
+                ], 400);
+            }
+
+            // Check for duplicate assignment
+            $emcRepo = $em->getRepository(EnseignantMatiereClasse::class);
+            $existingAssignment = $emcRepo->findOneBy([
+                'enseignant' => $teacher,
+                'classe' => $classe,
+                'matiere' => $subject,
+                'anneeScolaire' => $data['annee_scolaire']
+            ]);
+
+            if ($existingAssignment) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Cet enseignant est déjà assigné à cette classe pour cette matière et année scolaire.'
+                ], 400);
+            }
+
+            // Create new assignment
+            $assignment = new EnseignantMatiereClasse();
+            $assignment->setEnseignant($teacher);
+            $assignment->setClasse($classe);
+            $assignment->setMatiere($subject);
+            $assignment->setAnneeScolaire($data['annee_scolaire']);
+
+            $em->persist($assignment);
+            $em->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Classe assignée avec succès.'
+            ], 201);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue : ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     #[Route('/enseignants/create', name: 'admin_create_enseignant', methods: ['POST'])]
