@@ -68,6 +68,8 @@ class AdminController extends AbstractController
         ]);
     }
 
+    
+    // enseignants functions
     #[Route('/enseignants', name: 'admin_enseignants')]
     public function enseignants(UtilisateurRepository $utilisateurRepo): Response
     {
@@ -87,7 +89,7 @@ class AdminController extends AbstractController
     public function enseignantDetails(int $id, UtilisateurRepository $utilisateurRepo): Response
     {
         $teacherData = $utilisateurRepo->getTeacherDetailsWithClasses($id);
-        
+
         if (!$teacherData) {
             throw $this->createNotFoundException('Enseignant non trouvé');
         }
@@ -136,7 +138,7 @@ class AdminController extends AbstractController
             $enseignant->setPrenom($data['prenom']);
             $enseignant->setEmail($data['email']);
             $enseignant->setRole('enseignant'); // Défini comme enseignant
-            
+
             // Hash du mot de passe
             $hashedPassword = $passwordHasher->hashPassword(
                 $enseignant,
@@ -168,6 +170,8 @@ class AdminController extends AbstractController
         }
     }
 
+    // classes functions
+
     #[Route('/classes', name: 'admin_classes')]
     public function classes(
         ClasseRepository $classeRepo,
@@ -175,11 +179,11 @@ class AdminController extends AbstractController
         \App\Repository\MatiereRepository $matiereRepo
     ): Response {
         $classes = $classeRepo->getClassesWithDetails();
-        
+
         // Fetch teachers and subjects for the modal
         $teachers = $utilisateurRepo->findBy(['role' => 'enseignant']);
         $subjects = $matiereRepo->findAll();
-        
+
         return $this->render('admin/classes.html.twig', [
             'user' => $this->getUser(),
             'classes' => $classes,
@@ -203,30 +207,30 @@ class AdminController extends AbstractController
         try {
             // Get JSON data from request
             $data = json_decode($request->getContent(), true);
-            
+
             // Validate required fields
-            if (empty($data['nom']) || empty($data['niveau']) || empty($data['annee_scolaire']) || 
+            if (empty($data['nom']) || empty($data['niveau']) || empty($data['annee_scolaire']) ||
                 empty($data['enseignant_id']) || empty($data['matiere_id'])) {
                 return new JsonResponse([
                     'success' => false,
                     'message' => 'Tous les champs sont obligatoires.'
                 ], 400);
             }
-            
+
             // Check if class already exists
             $existingClass = $classeRepo->findOneBy([
                 'nom' => $data['nom'],
                 'niveau' => $data['niveau'],
                 'anneeScolaire' => $data['annee_scolaire']
             ]);
-            
+
             if ($existingClass) {
                 return new JsonResponse([
                     'success' => false,
                     'message' => 'Une classe avec ce nom, niveau et année scolaire existe déjà.'
                 ], 400);
             }
-            
+
             // Find teacher
             $teacher = $utilisateurRepo->find($data['enseignant_id']);
             if (!$teacher || $teacher->getRole() !== 'enseignant') {
@@ -235,7 +239,7 @@ class AdminController extends AbstractController
                     'message' => 'Enseignant invalide.'
                 ], 400);
             }
-            
+
             // Find subject
             $subject = $matiereRepo->find($data['matiere_id']);
             if (!$subject) {
@@ -244,34 +248,34 @@ class AdminController extends AbstractController
                     'message' => 'Matière invalide.'
                 ], 400);
             }
-            
+
             // Create new Classe
             $classe = new Classe();
             $classe->setNom($data['nom']);
             $classe->setNiveau($data['niveau']);
             $classe->setAnneeScolaire($data['annee_scolaire']);
-            
+
             // Persist the class
             $em->persist($classe);
             $em->flush();
-            
+
             // Create EnseignantMatiereClasse relationship
             $enseignantMatiereClasse = new EnseignantMatiereClasse();
             $enseignantMatiereClasse->setEnseignant($teacher);
             $enseignantMatiereClasse->setMatiere($subject);
             $enseignantMatiereClasse->setClasse($classe);
             $enseignantMatiereClasse->setAnneeScolaire($data['annee_scolaire']);
-            
+
             // Persist the relationship
             $em->persist($enseignantMatiereClasse);
             $em->flush();
-            
+
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Classe créée avec succès.',
                 'classe_id' => $classe->getId()
             ], 201);
-            
+
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
@@ -296,9 +300,9 @@ class AdminController extends AbstractController
             }
 
             $data = json_decode($request->getContent(), true);
-            
+
             // Validate required fields
-            if (empty($data['nom']) || empty($data['niveau']) || empty($data['annee_scolaire']) || 
+            if (empty($data['nom']) || empty($data['niveau']) || empty($data['annee_scolaire']) ||
                 empty($data['enseignant_id']) || empty($data['matiere_id'])) {
                 return new JsonResponse(['success' => false, 'message' => 'Tous les champs sont obligatoires.'], 400);
             }
@@ -332,7 +336,7 @@ class AdminController extends AbstractController
             }
 
             $emcRepo = $em->getRepository(EnseignantMatiereClasse::class);
-            
+
             // Check if exact match exists for new year
             $existingSpecific = $emcRepo->findOneBy([
                 'classe' => $classe,
@@ -345,7 +349,7 @@ class AdminController extends AbstractController
                 // If distinct match doesn't exist, try to update an old one
                 // Look for one matching the OLD year to migrate
                 $candidate = $emcRepo->findOneBy([
-                    'classe' => $classe, 
+                    'classe' => $classe,
                     'anneeScolaire' => $currentYear
                 ]);
 
@@ -389,34 +393,34 @@ class AdminController extends AbstractController
         try {
             // Find the class
             $classe = $classeRepo->find($id);
-            
+
             if (!$classe) {
                 return new JsonResponse([
                     'success' => false,
                     'message' => 'Classe introuvable.'
                 ], 404);
             }
-            
+
             // 1. Delete dependent EnseignantMatiereClasse records
             // We use DQL for efficiency or findBy + remove
             $em->createQuery('DELETE FROM App\Entity\EnseignantMatiereClasse emc WHERE emc.classe = :classe')
                ->setParameter('classe', $classe)
                ->execute();
-               
+
             // 2. Delete dependent Inscription records (students in this class)
             $em->createQuery('DELETE FROM App\Entity\Inscription i WHERE i.classe = :classe')
                ->setParameter('classe', $classe)
                ->execute();
-            
+
             // 3. Remove the class itself
             $em->remove($classe);
             $em->flush();
-            
+
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Classe et données associées supprimées avec succès.'
             ], 200);
-            
+
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
