@@ -73,4 +73,49 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             'classes' => $classes
         ];
     }
+
+    /**
+     * Find all students with their class for a specific school year
+     */
+    public function findAllElevesWithClass(string $anneeScolaire): array
+    {
+        // Get all students first
+        $eleves = $this->findBy(
+            ['role' => 'eleve'],
+            ['nom' => 'ASC', 'prenom' => 'ASC']
+        );
+
+        // Get all inscriptions for this year in one query
+        $inscriptions = $this->getEntityManager()
+            ->getRepository('App\Entity\Inscription')
+            ->createQueryBuilder('i')
+            ->leftJoin('i.classe', 'c')
+            ->addSelect('c')
+            ->where('i.anneeScolaire = :year')
+            ->setParameter('year', $anneeScolaire)
+            ->getQuery()
+            ->getResult();
+
+        // Create a map of eleve_id => inscription for quick lookup
+        $inscriptionMap = [];
+        foreach ($inscriptions as $inscription) {
+            $eleveId = $inscription->getEleve()->getId();
+            $inscriptionMap[$eleveId] = $inscription;
+        }
+
+        // Build normalized results
+        $results = [];
+        foreach ($eleves as $eleve) {
+            $eleveId = $eleve->getId();
+            $inscription = $inscriptionMap[$eleveId] ?? null;
+            
+            $results[] = [
+                'eleve' => $eleve,
+                'classe' => $inscription ? $inscription->getClasse() : null,
+                'statut' => $inscription ? $inscription->getStatut() : null
+            ];
+        }
+
+        return $results;
+    }
 }

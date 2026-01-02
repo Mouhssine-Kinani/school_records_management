@@ -28,7 +28,7 @@ class AdminController extends AbstractController
     {
         return [
             ['id' => 'dashboard', 'route' => 'admin_dashboard', 'icon' => 'dashboard', 'label' => 'Tableau de bord'],
-            ['id' => 'students', 'route' => 'admin_dashboard', 'icon' => 'school', 'label' => 'Dossiers Élèves'],
+            ['id' => 'students', 'route' => 'admin_eleves', 'icon' => 'school', 'label' => 'Dossiers Élèves'],
             ['id' => 'teachers', 'route' => 'admin_enseignants', 'icon' => 'work', 'label' => 'Enseignants'],
             ['id' => 'classes', 'route' => 'admin_classes', 'icon' => 'domain', 'label' => 'Classes']
         ];
@@ -68,6 +68,33 @@ class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/eleves', name: 'admin_eleves')]
+    public function eleves(UtilisateurRepository $utilisateurRepo): Response
+    {
+        // Calculate current school year (e.g., 2023-2024)
+        $year = (int) date('Y');
+        $month = (int) date('n');
+        
+        // If we are in Sep-Dec, year is Y-(Y+1). If Jan-Aug, year is (Y-1)-Y.
+        if ($month >= 9) {
+            $anneeScolaire = $year . '-' . ($year + 1);
+        } else {
+            $anneeScolaire = ($year - 1) . '-' . $year;
+        }
+
+        // Fetch students with their class and status
+        $students = $utilisateurRepo->findAllElevesWithClass($anneeScolaire);
+
+        return $this->render('admin/eleve.html.twig', [
+            'user' => $this->getUser(),
+            'students' => $students,
+            'currentYear' => $anneeScolaire,
+            'menuItems' => $this->getMenuItems(),
+            'activeMenu' => 'students',
+            'roleLabel' => 'Admin Panel',
+            'pageTitle' => 'Gestion des Élèves',
+        ]);
+    }
     
     // enseignants functions
     #[Route('/enseignants', name: 'admin_enseignants')]
