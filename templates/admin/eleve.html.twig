@@ -78,7 +78,6 @@
                                     <th class="py-5 px-6 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#9eb7a8]">Élève</th>
                                     <th class="py-5 px-6 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#9eb7a8]">ID</th>
                                     <th class="py-5 px-6 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#9eb7a8]">Classe</th>
-                                    <th class="py-5 px-6 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#9eb7a8]">Moyenne</th>
                                     <th class="py-5 px-6 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#9eb7a8]">Statut</th>
                                     <th class="py-5 px-6 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#9eb7a8] text-right">Actions</th>
                                 </tr>
@@ -112,9 +111,6 @@
                                             {% else %}
                                                 <span class="text-slate-400 italic text-sm">Non inscrit</span>
                                             {% endif %}
-                                        </td>
-                                        <td class="py-4 px-6 text-sm font-semibold text-slate-900 dark:text-white">
-                                            -- / 20
                                         </td>
                                         <td class="py-4 px-6">
                                             {% if item.statut == 'radie' %}
@@ -156,6 +152,41 @@
                                     </tr>
                                 {% endfor %}
                             </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                {% if pagination.totalPages > 1 %}
+                <div class="bg-surface-light dark:bg-[#1a2621] rounded-xl border border-slate-200 dark:border-[#29382f] shadow-sm p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="text-sm text-slate-600 dark:text-[#9eb7a8]">
+                        Affichage de <span class="font-bold text-slate-900 dark:text-white">{{ ((pagination.page - 1) * pagination.limit) + 1 }}</span> à <span class="font-bold text-slate-900 dark:text-white">{{ min(pagination.page * pagination.limit, pagination.total) }}</span> sur <span class="font-bold text-slate-900 dark:text-white">{{ pagination.total }}</span> élève(s)
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ path('admin_eleves', {'page': pagination.page - 1}) }}" 
+                           class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 dark:bg-[#111714] text-slate-700 dark:text-[#9eb7a8] hover:bg-slate-100 dark:hover:bg-[#29382f] transition-colors font-medium text-sm {% if pagination.page <= 1 %}opacity-50 cursor-not-allowed pointer-events-none{% endif %}">
+                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                            <span>Précédent</span>
+                        </a>
+                        
+                        <div class="flex items-center gap-1">
+                            {% for pageNum in range(max(1, pagination.page - 2), min(pagination.totalPages, pagination.page + 2)) %}
+                                {% if pageNum == pagination.page %}
+                                    <span class="px-4 py-2 rounded-full bg-primary text-[#111714] font-bold text-sm">{{ pageNum }}</span>
+                                {% else %}
+                                    <a href="{{ path('admin_eleves', {'page': pageNum}) }}" class="px-4 py-2 rounded-full bg-slate-50 dark:bg-[#111714] text-slate-700 dark:text-[#9eb7a8] hover:bg-slate-100 dark:hover:bg-[#29382f] transition-colors font-medium text-sm">{{ pageNum }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <a href="{{ path('admin_eleves', {'page': pagination.page + 1}) }}" 
+                           class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 dark:bg-[#111714] text-slate-700 dark:text-[#9eb7a8] hover:bg-slate-100 dark:hover:bg-[#29382f] transition-colors font-medium text-sm {% if pagination.page >= pagination.totalPages %}opacity-50 cursor-not-allowed pointer-events-none{% endif %}">
+                            <span>Suivant</span>
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
                         </table>
                     </div>
                 </div>

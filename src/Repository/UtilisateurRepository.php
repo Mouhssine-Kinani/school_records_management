@@ -76,46 +76,96 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
 
     /**
      * Find all students with their class for a specific school year
+     * Only returns students who have at least one note
+     * 
+     * @param string $anneeScolaire The school year (e.g., '2023-2024')
+     * @param int $page The page number (starts at 1)
+     * @param int $limit The number of results per page (default: 30)
+     * @return array Returns ['data' => array, 'total' => int, 'page' => int, 'limit' => int, 'totalPages' => int]
      */
-    public function findAllElevesWithClass(string $anneeScolaire): array
+    public function findAllElevesWithClass(string $anneeScolaire, int $page = 1, int $limit = 30): array
     {
-        // Get all students first
-        $eleves = $this->findBy(
-            ['role' => 'eleve'],
-            ['nom' => 'ASC', 'prenom' => 'ASC']
-        );
+        $offset = ($page - 1) * $limit;
 
-        // Get all inscriptions for this year in one query
-        $inscriptions = $this->getEntityManager()
-            ->getRepository('App\Entity\Inscription')
-            ->createQueryBuilder('i')
-            ->leftJoin('i.classe', 'c')
-            ->addSelect('c')
-            ->where('i.anneeScolaire = :year')
-            ->setParameter('year', $anneeScolaire)
-            ->getQuery()
-            ->getResult();
+        // Convert SQL query to Doctrine ORM QueryBuilder
+        // Exact conversion of the provided SQL query with INNER JOINs
+        // Note: The original SQL doesn't filter by anneeScolaire in WHERE clause
+        $qb = $this->createQueryBuilder('u')
+            ->select([
+                'u.id as eleve_id',
+                'u.nom as eleve_nom',
+                'u.prenom as eleve_prenom',
+                'u.email as eleve_email',
+                'u.numeroInscription as eleve_numero_inscription',
+                'c.id as classe_id',
+                'c.nom as classe_nom',
+                'i.statut as inscription_statut'
+            ])
+            ->innerJoin('App\Entity\Note', 'n', 'WITH', 'u.id = n.eleve')
+            ->innerJoin('App\Entity\Inscription', 'i', 'WITH', 'u.id = i.eleve')
+            ->innerJoin('App\Entity\Classe', 'c', 'WITH', 'i.classe = c.id')
+            ->where('u.role = :role')
+            ->setParameter('role', 'eleve')
+            ->groupBy('u.id, u.nom, u.prenom, u.email, u.numeroInscription, c.id, c.nom, i.statut')
+            ->orderBy('u.id', 'ASC');
 
-        // Create a map of eleve_id => inscription for quick lookup
-        $inscriptionMap = [];
-        foreach ($inscriptions as $inscription) {
-            $eleveId = $inscription->getEleve()->getId();
-            $inscriptionMap[$eleveId] = $inscription;
+        // Get total count for pagination (separate query without GROUP BY)
+        $countQb = $this->createQueryBuilder('u')
+            ->select('COUNT(DISTINCT u.id)')
+            ->innerJoin('App\Entity\Note', 'n', 'WITH', 'u.id = n.eleve')
+            ->innerJoin('App\Entity\Inscription', 'i', 'WITH', 'u.id = i.eleve')
+            ->innerJoin('App\Entity\Classe', 'c', 'WITH', 'i.classe = c.id')
+            ->where('u.role = :role')
+            ->setParameter('role', 'eleve');
+        
+        try {
+            $total = (int) $countQb->getQuery()->getSingleScalarResult();
+        } catch (\Doctrine\ORM\NoResultException $e) {
+            $total = 0;
         }
 
-        // Build normalized results
-        $results = [];
-        foreach ($eleves as $eleve) {
-            $eleveId = $eleve->getId();
-            $inscription = $inscriptionMap[$eleveId] ?? null;
-            
-            $results[] = [
+        // Apply pagination
+        $qb->setFirstResult($offset)
+           ->setMaxResults($limit);
+
+        $results = $qb->getQuery()->getResult();
+
+        // Transform results to match expected structure
+        $data = [];
+        foreach ($results as $row) {
+            // Create a minimal Utilisateur-like object structure
+            $eleve = (object) [
+                'id' => $row['eleve_id'],
+                'nom' => $row['eleve_nom'],
+                'prenom' => $row['eleve_prenom'],
+                'email' => $row['eleve_email'],
+                'numeroInscription' => $row['eleve_numero_inscription'] ?? null,
+            ];
+
+            // Create a minimal Classe-like object structure
+            $classe = null;
+            if (isset($row['classe_id']) && $row['classe_id'] !== null) {
+                $classe = (object) [
+                    'id' => $row['classe_id'],
+                    'nom' => $row['classe_nom'] ?? null,
+                ];
+            }
+
+            $data[] = [
                 'eleve' => $eleve,
-                'classe' => $inscription ? $inscription->getClasse() : null,
-                'statut' => $inscription ? $inscription->getStatut() : null
+                'classe' => $classe,
+                'statut' => $row['inscription_statut'] ?? null
             ];
         }
 
-        return $results;
+        $totalPages = (int) ceil($total / $limit);
+
+        return [
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages
+        ];
     }
 }

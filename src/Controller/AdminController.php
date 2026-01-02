@@ -69,7 +69,7 @@ class AdminController extends AbstractController
     }
 
     #[Route('/eleves', name: 'admin_eleves')]
-    public function eleves(UtilisateurRepository $utilisateurRepo): Response
+    public function eleves(Request $request, UtilisateurRepository $utilisateurRepo): Response
     {
         // Calculate current school year (e.g., 2023-2024)
         $year = (int) date('Y');
@@ -82,13 +82,23 @@ class AdminController extends AbstractController
             $anneeScolaire = ($year - 1) . '-' . $year;
         }
 
-        // Fetch students with their class and status
-        $students = $utilisateurRepo->findAllElevesWithClass($anneeScolaire);
+        // Get pagination parameters from request
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 30;
+
+        // Fetch students with their class and status (paginated)
+        $result = $utilisateurRepo->findAllElevesWithClass($anneeScolaire, $page, $limit);
 
         return $this->render('admin/eleve.html.twig', [
             'user' => $this->getUser(),
-            'students' => $students,
+            'students' => $result['data'],
             'currentYear' => $anneeScolaire,
+            'pagination' => [
+                'page' => $result['page'],
+                'totalPages' => $result['totalPages'],
+                'total' => $result['total'],
+                'limit' => $result['limit'],
+            ],
             'menuItems' => $this->getMenuItems(),
             'activeMenu' => 'students',
             'roleLabel' => 'Admin Panel',
