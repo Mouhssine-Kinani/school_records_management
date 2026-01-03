@@ -69,7 +69,7 @@ class AdminController extends AbstractController
     }
 
     #[Route('/eleves', name: 'admin_eleves')]
-    public function eleves(Request $request, UtilisateurRepository $utilisateurRepo): Response
+    public function eleves(Request $request, UtilisateurRepository $utilisateurRepo, ClasseRepository $classeRepo): Response
     {
         // Calculate current school year (e.g., 2023-2024)
         $year = (int) date('Y');
@@ -82,17 +82,23 @@ class AdminController extends AbstractController
             $anneeScolaire = ($year - 1) . '-' . $year;
         }
 
-        // Get pagination parameters from request
+        // Get filters from request
         $page = max(1, (int) $request->query->get('page', 1));
+        $niveau = $request->query->get('niveau') ?: null; // Handle empty string as null
         $limit = 30;
 
-        // Fetch students with their class and status (paginated)
-        $result = $utilisateurRepo->findAllElevesWithClass($anneeScolaire, $page, $limit);
+        // Fetch students with their class and status (paginated and filtered)
+        $result = $utilisateurRepo->findAllElevesWithClass($anneeScolaire, $page, $limit, $niveau);
+
+        // Fetch available levels for the filter dropdown
+        $levels = $classeRepo->findAllLevels();
 
         return $this->render('admin/eleve.html.twig', [
             'user' => $this->getUser(),
             'students' => $result['data'],
             'currentYear' => $anneeScolaire,
+            'levels' => $levels,
+            'currentNiveau' => $niveau,
             'pagination' => [
                 'page' => $result['page'],
                 'totalPages' => $result['totalPages'],

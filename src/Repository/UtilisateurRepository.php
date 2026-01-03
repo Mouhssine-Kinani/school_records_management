@@ -83,7 +83,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
      * @param int $limit The number of results per page (default: 30)
      * @return array Returns ['data' => array, 'total' => int, 'page' => int, 'limit' => int, 'totalPages' => int]
      */
-    public function findAllElevesWithClass(string $anneeScolaire, int $page = 1, int $limit = 30): array
+    public function findAllElevesWithClass(string $anneeScolaire, int $page = 1, int $limit = 30, ?string $niveau = null): array
     {
         $offset = ($page - 1) * $limit;
 
@@ -105,8 +105,14 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             ->innerJoin('App\Entity\Inscription', 'i', 'WITH', 'u.id = i.eleve')
             ->innerJoin('App\Entity\Classe', 'c', 'WITH', 'i.classe = c.id')
             ->where('u.role = :role')
-            ->setParameter('role', 'eleve')
-            ->groupBy('u.id, u.nom, u.prenom, u.email, u.numeroInscription, c.id, c.nom, i.statut')
+            ->setParameter('role', 'eleve');
+
+        if ($niveau) {
+            $qb->andWhere('c.niveau = :niveau')
+               ->setParameter('niveau', $niveau);
+        }
+
+        $qb->groupBy('u.id, u.nom, u.prenom, u.email, u.numeroInscription, c.id, c.nom, i.statut')
             ->orderBy('u.id', 'ASC');
 
         // Get total count for pagination (separate query without GROUP BY)
@@ -117,6 +123,11 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             ->innerJoin('App\Entity\Classe', 'c', 'WITH', 'i.classe = c.id')
             ->where('u.role = :role')
             ->setParameter('role', 'eleve');
+        
+        if ($niveau) {
+            $countQb->andWhere('c.niveau = :niveau')
+                    ->setParameter('niveau', $niveau);
+        }
         
         try {
             $total = (int) $countQb->getQuery()->getSingleScalarResult();
