@@ -686,4 +686,58 @@ class AdminController extends AbstractController
             ], 500);
         }
     }
+    #[Route('/eleves/{id}/delete', name: 'admin_delete_eleve', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    public function deleteEleve(
+        int $id,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo
+    ): JsonResponse {
+        try {
+            $student = $utilisateurRepo->find($id);
+
+            // Verify student exists and has correct role
+            if (!$student || !in_array('ROLE_ELEVE', $student->getRoles())) { // Check roles properly as getRole might return 'eleve' but logic uses roles array sometimes
+                 // Also check simple getRole() just in case, based on existing logic in controller
+                 if ($student->getRole() !== 'eleve') {
+                    return new JsonResponse([
+                        'success' => false,
+                        'message' => 'Élève non trouvé.'
+                    ], 404);
+                 }
+            }
+
+            // 1. Delete Inscriptions (Cascade Delete)
+            $em->createQuery('DELETE FROM App\Entity\Inscription i WHERE i.eleve = :eleve')
+               ->setParameter('eleve', $student)
+               ->execute();
+
+            // 2. Delete Notes (Cascade Delete)
+            $em->createQuery('DELETE FROM App\Entity\Note n WHERE n.eleve = :eleve')
+               ->setParameter('eleve', $student)
+               ->execute();
+
+            // 3. Nullify EleveParent relations (Set eleve_id to NULL)
+            // Note: EleveParent might be defined as ManyToOne with Eleve. 
+            // If the relation is 'private ?Utilisateur $eleve', we update it.
+            // Using DQL to update all at once
+             $em->createQuery('UPDATE App\Entity\EleveParent ep SET ep.eleve = NULL WHERE ep.eleve = :eleve')
+               ->setParameter('eleve', $student)
+               ->execute();
+
+            // 4. Delete the Student User
+            $em->remove($student);
+            $em->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Élève et dossier scolaire supprimés avec succès.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression : ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
