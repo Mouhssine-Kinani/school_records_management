@@ -28,7 +28,7 @@ class AdminController extends AbstractController
     {
         return [
             ['id' => 'dashboard', 'route' => 'admin_dashboard', 'icon' => 'dashboard', 'label' => 'Tableau de bord'],
-            ['id' => 'students', 'route' => 'admin_dashboard', 'icon' => 'school', 'label' => 'Dossiers Élèves'],
+            ['id' => 'students', 'route' => 'admin_eleves', 'icon' => 'school', 'label' => 'Dossiers Élèves'],
             ['id' => 'teachers', 'route' => 'admin_enseignants', 'icon' => 'work', 'label' => 'Enseignants'],
             ['id' => 'classes', 'route' => 'admin_classes', 'icon' => 'domain', 'label' => 'Classes']
         ];
@@ -68,6 +68,43 @@ class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/eleves', name: 'admin_eleves')]
+    public function eleves(Request $request, UtilisateurRepository $utilisateurRepo): Response
+    {
+        // Calculate current school year (e.g., 2023-2024)
+        $year = (int) date('Y');
+        $month = (int) date('n');
+        
+        // If we are in Sep-Dec, year is Y-(Y+1). If Jan-Aug, year is (Y-1)-Y.
+        if ($month >= 9) {
+            $anneeScolaire = $year . '-' . ($year + 1);
+        } else {
+            $anneeScolaire = ($year - 1) . '-' . $year;
+        }
+
+        // Get pagination parameters from request
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = 30;
+
+        // Fetch students with their class and status (paginated)
+        $result = $utilisateurRepo->findAllElevesWithClass($anneeScolaire, $page, $limit);
+
+        return $this->render('admin/eleve.html.twig', [
+            'user' => $this->getUser(),
+            'students' => $result['data'],
+            'currentYear' => $anneeScolaire,
+            'pagination' => [
+                'page' => $result['page'],
+                'totalPages' => $result['totalPages'],
+                'total' => $result['total'],
+                'limit' => $result['limit'],
+            ],
+            'menuItems' => $this->getMenuItems(),
+            'activeMenu' => 'students',
+            'roleLabel' => 'Admin Panel',
+            'pageTitle' => 'Gestion des Élèves',
+        ]);
+    }
     
     // enseignants functions
     #[Route('/enseignants', name: 'admin_enseignants')]
@@ -646,6 +683,60 @@ class AdminController extends AbstractController
             return new JsonResponse([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la suppression: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    #[Route('/eleves/{id}/delete', name: 'admin_delete_eleve', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    public function deleteEleve(
+        int $id,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo
+    ): JsonResponse {
+        try {
+            $student = $utilisateurRepo->find($id);
+
+            // Verify student exists and has correct role
+            if (!$student || !in_array('ROLE_ELEVE', $student->getRoles())) { // Check roles properly as getRole might return 'eleve' but logic uses roles array sometimes
+                 // Also check simple getRole() just in case, based on existing logic in controller
+                 if ($student->getRole() !== 'eleve') {
+                    return new JsonResponse([
+                        'success' => false,
+                        'message' => 'Élève non trouvé.'
+                    ], 404);
+                 }
+            }
+
+            // 1. Delete Inscriptions (Cascade Delete)
+            $em->createQuery('DELETE FROM App\Entity\Inscription i WHERE i.eleve = :eleve')
+               ->setParameter('eleve', $student)
+               ->execute();
+
+            // 2. Delete Notes (Cascade Delete)
+            $em->createQuery('DELETE FROM App\Entity\Note n WHERE n.eleve = :eleve')
+               ->setParameter('eleve', $student)
+               ->execute();
+
+            // 3. Nullify EleveParent relations (Set eleve_id to NULL)
+            // Note: EleveParent might be defined as ManyToOne with Eleve. 
+            // If the relation is 'private ?Utilisateur $eleve', we update it.
+            // Using DQL to update all at once
+             $em->createQuery('UPDATE App\Entity\EleveParent ep SET ep.eleve = NULL WHERE ep.eleve = :eleve')
+               ->setParameter('eleve', $student)
+               ->execute();
+
+            // 4. Delete the Student User
+            $em->remove($student);
+            $em->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Élève et dossier scolaire supprimés avec succès.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression : ' . $e->getMessage()
             ], 500);
         }
     }
