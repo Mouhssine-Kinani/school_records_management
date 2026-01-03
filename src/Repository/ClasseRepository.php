@@ -50,4 +50,19 @@ class ClasseRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+    /**
+     * Get all unique levels (niveaux)
+     * @return array
+     */
+    public function findAllLevels(): array
+    {
+        // SELECT DISTINCT niveau FROM classe ORDER BY niveau ASC
+        $results = $this->createQueryBuilder('c')
+            ->select('DISTINCT c.niveau')
+            ->orderBy('c.niveau', 'ASC')
+            ->getQuery()
+            ->getScalarResult(); // Returns [['niveau' => '6eme'], ['niveau' => '5eme'], ...]
+
+        return array_column($results, 'niveau');
+    }
 }
