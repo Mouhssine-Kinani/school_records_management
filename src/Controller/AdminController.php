@@ -111,6 +111,90 @@ class AdminController extends AbstractController
             'pageTitle' => 'Gestion des Élèves',
         ]);
     }
+
+    #[Route('/eleves/create', name: 'admin_create_eleve', methods: ['POST'])]
+    public function createEleve(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher,
+        UtilisateurRepository $utilisateurRepo
+    ): JsonResponse {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            // Validation simple des champs obligatoires
+            if (empty($data['nom']) || empty($data['prenom']) || empty($data['email'])) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Veuillez remplir les champs obligatoires (Nom, Prénom, Email).'
+                ], 400);
+            }
+
+            // Vérifier si l'email existe déjà
+            $existingUser = $utilisateurRepo->findOneBy(['email' => $data['email']]);
+            if ($existingUser) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Cet email est déjà utilisé par un autre utilisateur.'
+                ], 400);
+            }
+
+            // Génération du numéro d'inscription
+            $lastInscription = $utilisateurRepo->findLastNumeroInscription();
+            $newNumero = 'INS1000'; // Valeur par défaut
+            
+            if ($lastInscription) {
+                // Extrait le nombre (ex: INS1003 -> 1003)
+                if (preg_match('/INS(\d+)/', $lastInscription, $matches)) {
+                    $nextNumber = intval($matches[1]) + 1;
+                    $newNumero = 'INS' . $nextNumber;
+                }
+            }
+
+            // Création de l'élève
+            $eleve = new Utilisateur();
+            $eleve->setNom($data['nom']);
+            $eleve->setPrenom($data['prenom']);
+            $eleve->setEmail($data['email']);
+            $eleve->setRole('eleve');
+            $eleve->setNumeroInscription($newNumero);
+            $eleve->setDateCreationValue(); 
+
+            // Mot de passe
+            $plainPassword = !empty($data['mot_de_passe']) ? $data['mot_de_passe'] : 'eleve123';
+            $hashedPassword = $passwordHasher->hashPassword($eleve, $plainPassword);
+            $eleve->setMotDePasse($hashedPassword);
+
+            // Champs optionnels
+            if (!empty($data['date_naissance'])) {
+                $eleve->setDateNaissance(new \DateTime($data['date_naissance']));
+            }
+            if (!empty($data['lieu_naissance'])) {
+                $eleve->setLieuNaissance($data['lieu_naissance']);
+            }
+            if (!empty($data['adresse'])) {
+                $eleve->setAdresse($data['adresse']);
+            }
+            if (!empty($data['telephone'])) {
+                $eleve->setTelephone($data['telephone']);
+            }
+
+            $em->persist($eleve);
+            $em->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Élève ajouté avec succès.',
+                'numero_inscription' => $newNumero
+            ], 201);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue : ' . $e->getMessage()
+            ], 500);
+        }
+    }
     
     // enseignants functions
     #[Route('/enseignants', name: 'admin_enseignants')]

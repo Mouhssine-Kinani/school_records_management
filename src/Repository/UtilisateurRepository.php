@@ -179,4 +179,18 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             'totalPages' => $totalPages
         ];
     }
+
+    public function findLastNumeroInscription(): ?string
+    {
+        $result = $this->createQueryBuilder('u')
+            ->select('u.numeroInscription')
+            ->where('u.numeroInscription LIKE :prefix')
+            ->setParameter('prefix', 'INS%')
+            ->orderBy('u.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result ? $result['numeroInscription'] : null;
+    }
 }
