@@ -34,10 +34,23 @@ class EnseignantController extends AbstractController
             5
         );
 
+        // Récupérer tous les étudiants des classes de cet enseignant
+        $classesIds = array_map(fn($a) => $a->getClasse()->getId(), $affectations);
+        if (!empty($classesIds)) {
+            $etudiants = $inscriptionRepo->createQueryBuilder('i')
+                ->andWhere('i.classe IN (:classes)')
+                ->setParameter('classes', $classesIds)
+                ->getQuery()
+                ->getResult();
+        } else {
+            $etudiants = [];
+        }
+
         return $this->render('enseignant/dashboard.html.twig', [
             'user' => $enseignant,
             'affectations' => $affectations,
             'dernieresNotes' => $dernieresNotes,
+            'etudiants' => $etudiants,
         ]);
     }
 }
