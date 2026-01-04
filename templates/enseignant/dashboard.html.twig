@@ -9,13 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;900&family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-
     <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -73,53 +70,47 @@
         </div>
     </div>
 
-    <!-- CLASSES ASSIGNÉES -->
-    <section>
-        <h2 class="text-xl font-bold mb-4">Classes Assignées</h2>
+<!-- SECTION CLASSES ASSIGNÉES -->
+<section>
+    <h2 class="text-xl font-bold mb-2">Classes Assignées</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {% for a in affectations %}
-            <div class="bg-surface-dark p-5 rounded-xl border border-white/5">
-                <div class="flex justify-between mb-3">
-                    <span class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-bold">
-                        {{ a.classe.nom }}
-                    </span>
-                </div>
+    <!-- Barre de recherche pour les classes -->
+    <input
+        type="text"
+        id="search-classes"
+        placeholder="Rechercher une classe..."
+        class="w-full mb-4 p-2 rounded-lg bg-surface-dark text-white border border-white/10 focus:outline-none focus:border-primary"
+    />
 
-                <h3 class="text-2xl font-bold">{{ a.matiere.libelle }}</h3>
-
-                <p class="text-gray-400 text-sm mt-2">
-                    Année scolaire : {{ a.anneeScolaire }}
-                </p>
-
-                <a href="#" class="inline-block mt-4 bg-primary text-black font-bold px-4 py-2 rounded-full">
-                    Gérer
-                </a>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="classes-list">
+        {% for a in affectations %}
+        <div class="class-item bg-surface-dark p-5 rounded-xl border border-white/5">
+            <div class="flex justify-between mb-3">
+                <span class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-bold">
+                    {{ a.classe.nom }}
+                </span>
             </div>
-            {% else %}
-                <p class="text-gray-400">Aucune classe assignée</p>
-            {% endfor %}
+            <h3 class="text-2xl font-bold">{{ a.matiere.libelle }}</h3>
+            <p class="text-gray-400 text-sm mt-2">Année scolaire : {{ a.anneeScolaire }}</p>
+            <a href="#" class="inline-block mt-4 bg-primary text-black font-bold px-4 py-2 rounded-full">Gérer</a>
         </div>
-    </section>
+        {% else %}
+            <p class="text-gray-400">Aucune classe assignée</p>
+        {% endfor %}
+    </div>
+</section>
 
-    <!-- DERNIÈRES NOTES -->
+<!-- DERNIÈRES NOTES -->
     <section>
         <h2 class="text-xl font-bold mb-4">Dernières Notes</h2>
-
         <div class="space-y-4 bg-surface-dark p-5 rounded-xl border border-white/5">
             {% for note in dernieresNotes %}
             <div class="flex justify-between">
                 <div>
-                    <p class="font-bold">
-                        {{ note.eleve.prenom }} {{ note.eleve.nom }}
-                    </p>
-                    <p class="text-xs text-gray-400">
-                        {{ note.matiere.libelle }} – {{ note.type }}
-                    </p>
+                    <p class="font-bold">{{ note.eleve.prenom }} {{ note.eleve.nom }}</p>
+                    <p class="text-xs text-gray-400">{{ note.matiere.libelle }} – {{ note.type }}</p>
                 </div>
-                <span class="text-primary font-bold">
-                    {{ note.valeur }}/20
-                </span>
+                <span class="text-primary font-bold">{{ note.valeur }}/20</span>
             </div>
             <hr class="border-white/5"/>
             {% else %}
@@ -127,6 +118,64 @@
             {% endfor %}
         </div>
     </section>
+
+<!-- LISTE DES ÉTUDIANTS -->
+<section>
+    <h2 class="text-xl font-bold mb-2">Liste des Étudiants</h2>
+
+    <!-- Barre de recherche pour les étudiants -->
+    <input
+        type="text"
+        id="search-students"
+        placeholder="Rechercher un étudiant..."
+        class="w-full mb-4 p-2 rounded-lg bg-surface-dark text-white border border-white/10 focus:outline-none focus:border-primary"
+    />
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="students-list">
+        {% for etu in etudiants %}
+        <div class="student-item bg-surface-dark p-4 rounded-xl border border-white/5 flex justify-between items-center hover:bg-white/5 transition-colors">
+            <div>
+                <p class="font-bold">{{ etu.eleve.prenom }} {{ etu.eleve.nom }}</p>
+                <p class="text-xs text-gray-400">{{ etu.classe.nom }}</p>
+            </div>
+            <span class="material-symbols-outlined text-primary">person</span>
+        </div>
+        {% else %}
+            <p class="text-gray-400">Aucun étudiant trouvé</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- SCRIPT DE RECHERCHE -->
+<script>
+    // Recherche Classes
+    const classInput = document.getElementById('search-classes');
+    const classItems = document.querySelectorAll('.class-item');
+
+    classInput.addEventListener('input', () => {
+        const filter = classInput.value.toLowerCase();
+        classItems.forEach(item => {
+            const text = item.querySelector('h3').textContent.toLowerCase() + ' ' +
+                         item.querySelector('span').textContent.toLowerCase();
+            item.style.display = text.includes(filter) ? 'block' : 'none';
+        });
+    });
+
+    // Recherche Étudiants
+    const studentInput = document.getElementById('search-students');
+    const studentItems = document.querySelectorAll('.student-item');
+
+    studentInput.addEventListener('input', () => {
+        const filter = studentInput.value.toLowerCase();
+        studentItems.forEach(item => {
+            const name = item.querySelector('p.font-bold').textContent.toLowerCase();
+            const classe = item.querySelector('p.text-xs').textContent.toLowerCase();
+            item.style.display = name.includes(filter) || classe.includes(filter) ? 'flex' : 'none';
+        });
+    });
+</script>
+
+
 
 </main>
 
