@@ -33,7 +33,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
     {
         // First, get the teacher
         $teacher = $this->find($teacherId);
-        
+
         if (!$teacher || $teacher->getRole() !== 'enseignant') {
             return null;
         }
@@ -51,7 +51,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
         ')->setParameter('teacherId', $teacherId);
 
         $results = $query->getResult();
-        
+
         $classes = [];
         foreach ($results as $row) {
             // $row[0] is the EnseignantMatiereClasse entity
@@ -59,7 +59,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             $emc = $row[0];
             $classe = $emc->getClasse();
             $matiere = $emc->getMatiere();
-            
+
             $classes[] = [
                 'classe' => $classe,
                 'matiere' => $matiere,
@@ -109,7 +109,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
 
         if ($niveau) {
             $qb->andWhere('c.niveau = :niveau')
-               ->setParameter('niveau', $niveau);
+                ->setParameter('niveau', $niveau);
         }
 
         $qb->groupBy('u.id, u.nom, u.prenom, u.email, u.numeroInscription, c.id, c.nom, i.statut')
@@ -123,12 +123,12 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             ->innerJoin('App\Entity\Classe', 'c', 'WITH', 'i.classe = c.id')
             ->where('u.role = :role')
             ->setParameter('role', 'eleve');
-        
+
         if ($niveau) {
             $countQb->andWhere('c.niveau = :niveau')
-                    ->setParameter('niveau', $niveau);
+                ->setParameter('niveau', $niveau);
         }
-        
+
         try {
             $total = (int) $countQb->getQuery()->getSingleScalarResult();
         } catch (\Doctrine\ORM\NoResultException $e) {
@@ -137,7 +137,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
 
         // Apply pagination
         $qb->setFirstResult($offset)
-           ->setMaxResults($limit);
+            ->setMaxResults($limit);
 
         $results = $qb->getQuery()->getResult();
 
@@ -178,5 +178,28 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             'limit' => $limit,
             'totalPages' => $totalPages
         ];
+    }
+
+    public function findElevesPaginated(int $limit, int $offset): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.role = :role')
+            ->setParameter('role', 'eleve') // ✅ CORRECTION
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->orderBy('u.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
+    public function countEleves(): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere('u.role = :role')
+            ->setParameter('role', 'eleve') // ✅ CORRECTION
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }
