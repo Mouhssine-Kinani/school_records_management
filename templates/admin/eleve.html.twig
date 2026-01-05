@@ -30,7 +30,7 @@
                             <span class="material-symbols-outlined text-[20px]">upload_file</span>
                             <span>Importer</span>
                         </button>
-                        <button class="flex items-center gap-2 px-6 py-3 bg-primary text-[#111714] rounded-full hover:bg-[#2ec568] transition-colors shadow-lg shadow-primary/20 font-bold text-sm">
+                        <button onclick="openAddStudentModal()" class="flex items-center gap-2 px-6 py-3 bg-primary text-[#111714] rounded-full hover:bg-[#2ec568] transition-colors shadow-lg shadow-primary/20 font-bold text-sm">
                             <span class="material-symbols-outlined text-[20px]">add</span>
                             <span>Ajouter un élève</span>
                         </button>
@@ -198,6 +198,82 @@
     </main>
 </div>
 
+{# Add Student Modal #}
+<div id="addStudentModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] max-w-2xl w-full shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <div class="p-6 border-b border-slate-200 dark:border-[#29382f] flex justify-between items-center sticky top-0 bg-white dark:bg-surface-dark z-10">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Ajouter un nouvel élève</h3>
+            <button onclick="closeAddStudentModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto custom-scrollbar">
+            <form id="addStudentForm" class="space-y-6">
+                <!-- Identité -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 dark:text-[#9eb7a8]">Nom <span class="text-red-500">*</span></label>
+                        <input type="text" name="nom" required class="w-full h-11 px-4 bg-slate-50 dark:bg-[#111714] border border-slate-200 dark:border-[#29382f] rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Ex: Dupont">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 dark:text-[#9eb7a8]">Prénom <span class="text-red-500">*</span></label>
+                        <input type="text" name="prenom" required class="w-full h-11 px-4 bg-slate-50 dark:bg-[#111714] border border-slate-200 dark:border-[#29382f] rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Ex: Jean">
+                    </div>
+                </div>
+
+                <!-- Contact & Login -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 dark:text-[#9eb7a8]">Email <span class="text-red-500">*</span></label>
+                        <input type="email" name="email" required class="w-full h-11 px-4 bg-slate-50 dark:bg-[#111714] border border-slate-200 dark:border-[#29382f] rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="jean.dupont@ecole.com">
+                        <p class="text-xs text-red-500 hidden" id="emailError">Email invalide</p>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 dark:text-[#9eb7a8]">Mot de passe</label>
+                        <input type="password" name="mot_de_passe" class="w-full h-11 px-4 bg-slate-50 dark:bg-[#111714] border border-slate-200 dark:border-[#29382f] rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Par défaut: eleve123">
+                        <p class="text-xs text-slate-400">Laisser vide pour utiliser le mot de passe par défaut.</p>
+                    </div>
+                </div>
+
+                <!-- Infos Complémentaires Header -->
+                <div class="border-t border-slate-200 dark:border-[#29382f] pt-4">
+                    <h4 class="text-sm font-bold text-slate-500 dark:text-[#9eb7a8] uppercase tracking-wider mb-4">Informations Complémentaires (Optionnel)</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-slate-700 dark:text-[#9eb7a8]">Date de naissance</label>
+                            <input type="date" name="date_naissance" class="w-full h-11 px-4 bg-slate-50 dark:bg-[#111714] border border-slate-200 dark:border-[#29382f] rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-slate-700 dark:text-[#9eb7a8]">Lieu de naissance</label>
+                            <input type="text" name="lieu_naissance" class="w-full h-11 px-4 bg-slate-50 dark:bg-[#111714] border border-slate-200 dark:border-[#29382f] rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Ex: Paris">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-slate-700 dark:text-[#9eb7a8]">Téléphone</label>
+                            <input type="tel" name="telephone" class="w-full h-11 px-4 bg-slate-50 dark:bg-[#111714] border border-slate-200 dark:border-[#29382f] rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Ex: 0612345678">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-slate-700 dark:text-[#9eb7a8]">Adresse</label>
+                            <textarea name="adresse" rows="1" class="w-full px-4 py-3 bg-slate-50 dark:bg-[#111714] border border-slate-200 dark:border-[#29382f] rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all min-h-[44px]" placeholder="Ex: 12 Rue de la Paix"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-slate-200 dark:border-[#29382f]">
+                    <button type="button" onclick="closeAddStudentModal()" class="flex-1 px-5 py-3 rounded-xl border border-slate-200 dark:border-[#29382f] text-slate-700 dark:text-white font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-colors">
+                        Annuler
+                    </button>
+                    <button type="submit" id="submitAddStudent" class="flex-1 px-5 py-3 rounded-xl bg-primary text-[#111714] font-bold hover:bg-[#2ec568] transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                        <span>Ajouter l'élève</span>
+                        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {# Delete Confirmation Modal #}
 <div id="deleteConfirmationModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-[#29382f] max-w-md w-full shadow-2xl overflow-hidden">
@@ -269,6 +345,81 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.classList.add('translate-x-full', 'opacity-0');
             setTimeout(() => toast.remove(), 300);
         }, 5000);
+    }
+
+    // Add Student Modal Logic
+    const addStudentModal = document.getElementById('addStudentModal');
+    const addStudentForm = document.getElementById('addStudentForm');
+    const submitAddStudentBtn = document.getElementById('submitAddStudent');
+
+    window.openAddStudentModal = function() {
+        addStudentModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        addStudentForm.reset(); 
+        if(document.getElementById('emailError')) document.getElementById('emailError').classList.add('hidden');
+    };
+
+    window.closeAddStudentModal = function() {
+        addStudentModal.classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    if (addStudentModal) {
+        addStudentModal.addEventListener('click', (e) => {
+            if (e.target === addStudentModal) closeAddStudentModal();
+        });
+    }
+
+    if (addStudentForm) {
+        addStudentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Regex Validation
+            const emailInput = this.querySelector('input[name="email"]');
+            const emailError = document.getElementById('emailError');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(emailInput.value)) {
+                if(emailError) emailError.classList.remove('hidden');
+                emailInput.focus();
+                return;
+            } else {
+                if(emailError) emailError.classList.add('hidden');
+            }
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            // Loading
+            const originalBtnContent = submitAddStudentBtn.innerHTML;
+            submitAddStudentBtn.disabled = true;
+            submitAddStudentBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> Traitement...';
+
+            try {
+                const response = await fetch('/admin/eleves/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast(result.message, 'success');
+                    closeAddStudentModal();
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast(result.message || "Erreur lors de l'ajout", 'error');
+                    submitAddStudentBtn.disabled = false;
+                    submitAddStudentBtn.innerHTML = originalBtnContent;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Erreur serveur', 'error');
+                submitAddStudentBtn.disabled = false;
+                submitAddStudentBtn.innerHTML = originalBtnContent;
+            }
+        });
     }
 
     // Delete Modal Logic
