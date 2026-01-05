@@ -202,4 +202,36 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function findElevesWithFilters(
+        ?string $search,
+        ?int $classeId,
+        ?string $statut
+    ): array {
+
+        $qb = $this->createQueryBuilder('u')
+            ->andWhere('u.role = :role')
+            ->setParameter('role', 'eleve');
+
+        if ($search) {
+            $qb->andWhere('u.nom LIKE :search OR u.prenom LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($statut) {
+            $qb->andWhere('u.statut = :statut')
+                ->setParameter('statut', $statut);
+        }
+
+        if ($classeId) {
+            $qb->innerJoin('u.inscriptions', 'i')
+                ->andWhere('i.classe = :classe')
+                ->setParameter('classe', $classeId);
+        }
+
+        return $qb->orderBy('u.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+    
 }

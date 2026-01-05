@@ -147,7 +147,7 @@
 <div class="bg-surface-light dark:bg-[#1a2621] p-4 rounded-xl border border-slate-200 dark:border-[#29382f] shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
 <div class="relative w-full md:w-96 group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
-<input class="w-full h-12 pl-12 pr-4 bg-slate-50 dark:bg-[#111714] border-none rounded-full text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#5e7065] focus:ring-2 focus:ring-primary transition-all" placeholder="Rechercher par nom, classe..." type="text"/>
+<input id="searchInput" class="w-full h-12 pl-12 pr-4 bg-slate-50 dark:bg-[#111714] border-none rounded-full text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#5e7065] focus:ring-2 focus:ring-primary transition-all" placeholder="Rechercher par nom, classe..." type="text"/>
 </div>
 <div class="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
 <div class="relative min-w-[160px]">
@@ -191,7 +191,7 @@
 <tbody class="divide-y divide-slate-200 dark:divide-[#29382f]">
 
 {% for eleve in eleves %}
-<tr class="group hover:bg-slate-50 dark:hover:bg-[#23302a] transition-colors">
+<tr class="student-row group hover:bg-slate-50 dark:hover:bg-[#23302a] transition-colors">
 
     <!-- Élève -->
     <td class="py-4 px-6">
@@ -341,4 +341,25 @@
             </footer>
 </div>
 </main>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("searchInput");
+    const rows = document.querySelectorAll(".student-row");
+
+    searchInput.addEventListener("keyup", () => {
+        const value = searchInput.value.toLowerCase();
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+
+            if (text.includes(value)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+});
+</script>
+
 </body></html>
