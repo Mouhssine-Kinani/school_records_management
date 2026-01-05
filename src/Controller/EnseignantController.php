@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\ClasseRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -9,6 +10,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Repository\EnseignantMatiereClasseRepository;
 use App\Repository\NoteRepository;
 use App\Repository\InscriptionRepository;
+use Symfony\Component\HttpFoundation\Request;
 
 #[Route('/enseignant')]
 #[IsGranted('ROLE_ENSEIGNANT')]
@@ -36,21 +38,111 @@ class EnseignantController extends AbstractController
 
         // Récupérer tous les étudiants des classes de cet enseignant
         $classesIds = array_map(fn($a) => $a->getClasse()->getId(), $affectations);
+
+        $nbEtudiants = 0;
+
         if (!empty($classesIds)) {
-            $etudiants = $inscriptionRepo->createQueryBuilder('i')
+            $nbEtudiants = $inscriptionRepo->createQueryBuilder('i')
+                ->select('COUNT(i.id)')
                 ->andWhere('i.classe IN (:classes)')
                 ->setParameter('classes', $classesIds)
                 ->getQuery()
-                ->getResult();
+                ->getSingleScalarResult();
         } else {
             $etudiants = [];
+        }
+
+        $nbNotesEnAttente = $noteRepo->createQueryBuilder('n')
+            ->select('COUNT(n.id)')
+            ->andWhere('n.enseignant = :enseignant')
+            ->andWhere('n.valeur IS NULL')
+            ->setParameter('enseignant', $enseignant)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+
+        $nbEtudiantsParClasse = [];
+
+        foreach ($affectations as $affectation) {
+            $classeId = $affectation->getClasse()->getId();
+
+            if (!isset($nbEtudiantsParClasse[$classeId])) {
+                $nbEtudiantsParClasse[$classeId] = $inscriptionRepo->createQueryBuilder('i')
+                    ->select('COUNT(i.id)')
+                    ->andWhere('i.classe = :classe')
+                    ->setParameter('classe', $classeId)
+                    ->getQuery()
+                    ->getSingleScalarResult();
+            }
+        }
+
+        $matieres = [];
+
+        foreach ($affectations as $affectation) {
+            $matiere = $affectation->getMatiere();
+            $matiereId = $matiere->getId();
+
+            if (!isset($matieres[$matiereId])) {
+                $matieres[$matiereId] = [
+                    'matiere' => $matiere,
+                    'classes' => [],
+                ];
+            }
+
+            $matieres[$matiereId]['classes'][] = $affectation->getClasse();
         }
 
         return $this->render('enseignant/dashboard.html.twig', [
             'user' => $enseignant,
             'affectations' => $affectations,
             'dernieresNotes' => $dernieresNotes,
-            'etudiants' => $etudiants,
+            'nbEtudiants' => $nbEtudiants,
+            'nbNotesEnAttente' => $nbNotesEnAttente,
+            'nbEtudiantsParClasse' => $nbEtudiantsParClasse,
+            'matieres' => $matieres,
+        ]);
+    }
+
+    #[Route('/enseignant/gestion-classes', name: 'enseignant_gestion_classes')]
+    public function gestionClasses(
+        EnseignantMatiereClasseRepository $emcRepository,
+        Request $request
+    ): Response {
+        $enseignant = $this->getUser();
+
+        // Récupération des filtres depuis la requête GET
+        $niveau = $request->query->get('niveau');        // Filtre par niveau (6,5,4,3)
+        $q = $request->query->get('q');                 // Recherche par nom de classe
+
+        // Pagination
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 5;                                     // nombre de classes par page
+        $offset = ($page - 1) * $limit;
+
+        // Récupération des classes filtrées et paginées
+        $relations = $emcRepository->findByEnseignantNiveauEtRecherche(
+            $enseignant,
+            $niveau,
+            $q,
+            $limit,
+            $offset
+        );
+
+        // Nombre total pour la pagination
+        $total = $emcRepository->countByEnseignantNiveauEtRecherche(
+            $enseignant,
+            $niveau,
+            $q
+        );
+
+        // Rendu Twig
+        return $this->render('enseignant/gestion_classes.html.twig', [
+            'relations' => $relations,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'niveau' => $niveau,
+            'q' => $q,           // pour pré-remplir l'input de recherche
         ]);
     }
 }
