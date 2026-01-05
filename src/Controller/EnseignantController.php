@@ -11,6 +11,8 @@ use App\Repository\EnseignantMatiereClasseRepository;
 use App\Repository\NoteRepository;
 use App\Repository\InscriptionRepository;
 use Symfony\Component\HttpFoundation\Request;
+use App\Repository\UtilisateurRepository;
+use Symfony\Bundle\SecurityBundle\Security;
 
 #[Route('/enseignant')]
 #[IsGranted('ROLE_ENSEIGNANT')]
@@ -143,6 +145,32 @@ class EnseignantController extends AbstractController
             'limit' => $limit,
             'niveau' => $niveau,
             'q' => $q,           // pour pré-remplir l'input de recherche
+        ]);
+    }
+
+    #[Route('/enseignant/gestion-etudiants', name: 'enseignant_gestion_etudiants')]
+    public function gestionEtudiants(
+        Request $request,
+        UtilisateurRepository $utilisateurRepository
+    ): Response {
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+
+        $totalEleves = $utilisateurRepository->countEleves(); // méthode perso
+        $eleves = $utilisateurRepository->findElevesPaginated($limit, $offset);
+
+        $totalPages = ceil($totalEleves / $limit);
+        $start = $offset + 1;
+        $end = min($offset + $limit, $totalEleves);
+
+        return $this->render('enseignant/gestion_etudiants.html.twig', [
+            'eleves' => $eleves,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'totalEleves' => $totalEleves,
+            'start' => $start,
+            'end' => $end,
         ]);
     }
 }
