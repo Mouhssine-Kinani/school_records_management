@@ -3,7 +3,7 @@
 <html class="dark" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Enseignant Dashboard - School RMS</title>
+<title>Gestion des Classes - School RMS</title>
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -76,11 +76,11 @@
 </div>
 <!-- Navigation Links -->
 <nav class="flex-1 flex flex-col gap-2">
-<a class="flex items-center gap-4 px-4 py-3 rounded-full bg-primary/10 text-primary transition-all" href="{{path('enseignant_dashboard')}}">
+<a class="flex items-center gap-4 px-4 py-3 rounded-full text-slate-500 dark:text-gray-400 hover:bg-surface-dark hover:text-white transition-all" href="{{path('enseignant_dashboard')}}">
 <span class="material-symbols-outlined filled">dashboard</span>
 <span class="text-sm font-bold">Dashboard</span>
 </a>
-<a class="flex items-center gap-4 px-4 py-3 rounded-full text-slate-500 dark:text-gray-400 hover:bg-surface-dark hover:text-white transition-all" href="{{ path('enseignant_gestion_classes') }}">
+<a class="flex items-center gap-4 px-4 py-3 rounded-full text-slate-500 dark:text-gray-400 hover:bg-surface-dark hover:text-white transition-all" href="#">
 <span class="material-symbols-outlined">class</span>
 <span class="text-sm font-medium">Classes</span>
 </a>
@@ -148,167 +148,169 @@
 <span class="text-sm font-bold">{{ "now"|date("d/m/Y") }}</span>
 </div>
 </div>
-<!-- Stats Overview -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div class="bg-surface-dark p-6 rounded-xl border border-white/5 flex flex-col justify-between h-32 hover:border-primary/30 transition-all cursor-pointer group">
-<div class="flex justify-between items-start">
-<span class="text-gray-400 text-sm font-medium">Total Étudiants</span>
-<span class="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg group-hover:scale-110 transition-transform">groups</span>
+<!-- Main Area -->
+<main class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+<div class="max-w-7xl mx-auto flex flex-col gap-8">
+<!-- Header & Actions -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<p class="text-[#9eb7a8] text-sm font-medium mb-1">/ Classes</p>
+<h1 class="text-3xl md:text-4xl font-black text-white tracking-tight">Gestion des Classes</h1>
 </div>
-<p class="text-3xl font-bold text-white">{{ nbEtudiants }}</p>
+<button class="flex items-center justify-center gap-2 bg-primary text-black hover:bg-white transition-colors h-12 px-6 rounded-full font-bold shadow-[0_0_20px_rgba(56,224,123,0.3)] hover:shadow-[0_0_30px_rgba(56,224,123,0.5)] active:scale-95 transform duration-200">
+<span class="material-symbols-outlined">add_circle</span>
+<span>Nouvelle Classe</span>
+</button>
 </div>
-<div class="bg-surface-dark p-6 rounded-xl border border-white/5 flex flex-col justify-between h-32 hover:border-primary/30 transition-all cursor-pointer group">
-<div class="flex justify-between items-start">
-<span class="text-gray-400 text-sm font-medium">Notes en attente</span>
-<span class="material-symbols-outlined text-orange-400 bg-orange-400/10 p-1.5 rounded-lg group-hover:scale-110 transition-transform">pending_actions</span>
-</div>
-<p class="text-3xl font-bold text-white">{{ nbNotesEnAttente }}</p>
-</div>
-</div>
-<!-- Main Layout Grid: Classes/Subjects (Left) & Activity (Right) -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-<!-- Left Column: Classes & Subjects -->
-<div class="xl:col-span-2 space-y-8">
-<!-- Classes Assignées -->
-<section>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {% for affectation in affectations %}
-        {% set classe = affectation.classe %}
-        {% set matiere = affectation.matiere %}
-        {% set nbEtudiantsClasse = nbEtudiantsParClasse[classe.id] ?? 0 %}
-
-        <div class="bg-surface-dark rounded-xl p-5 border border-white/5 relative overflow-hidden group">
-
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span class="material-symbols-outlined text-6xl">school</span>
-            </div>
-
-            <div class="flex justify-between items-start mb-4">
-                <div class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    {{ classe.nom }}
-                </div>
-                <button class="text-gray-500 hover:text-white">
-                    <span class="material-symbols-outlined">more_horiz</span>
-                </button>
-            </div>
-
-            <h3 class="text-2xl font-bold text-white mb-1">
-                {{ matiere.libelle }}
-            </h3>
-
-            <p class="text-gray-400 text-sm mb-6 flex items-center gap-2">
-                <span class="material-symbols-outlined text-sm">person</span>
-                {{ nbEtudiantsClasse }} Étudiants
-            </p>
-
-            <div class="flex items-center justify-between mt-auto">
-                <div class="text-xs text-gray-500">
-                    Année scolaire :
-                    <span class="text-white font-medium">
-                        {{ affectation.anneeScolaire }}
-                    </span>
-                </div>
-
-                <a href="#"
-                   class="bg-primary text-black font-bold text-sm px-4 py-2 rounded-full hover:bg-primary-dark transition-colors">
-                    Gérer
-                </a>
-            </div>
+<!-- Filters & Toolbar -->
+<div class="bg-surface-dark rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center border border-[#29382f]">
+<!-- Search within page -->
+<form method="get" class="flex-1 w-full">
+    <div class="relative w-full">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span class="material-symbols-outlined text-[#9eb7a8] text-[20px]">search</span>
         </div>
-    {% else %}
-        <p class="text-gray-400">Aucune classe assignée.</p>
-    {% endfor %}
-</div>
-
-</section>
-<!-- Matières Enseignées -->
-<section>
-    <h2 class="text-xl font-bold text-white mb-4">Matières Enseignées</h2>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {% for data in matieres %}
-            {% set matiere = data.matiere %}
-            {% set nbClasses = data.classes|length %}
-
-            <div class="bg-surface-dark p-4 rounded-xl border border-white/5 flex items-center gap-4 hover:bg-white/5 transition-colors cursor-pointer">
-
-                <div class="size-12 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                    <span class="material-symbols-outlined">menu_book</span>
-                </div>
-
-                <div>
-                    <h4 class="font-bold text-white">
-                        {{ matiere.libelle ?? matiere.nom ?? 'Matière' }}
-                    </h4>
-
-                    <p class="text-xs text-gray-400">
-                        {{ nbClasses }} Classe{{ nbClasses > 1 ? 's' : '' }}
-                        • —
-                        H / semaine
-                    </p>
-                </div>
-
-                <span class="material-symbols-outlined text-gray-600 ml-auto">
-                    chevron_right
-                </span>
-            </div>
-        {% else %}
-            <p class="text-gray-400">Aucune matière assignée.</p>
-        {% endfor %}
+        <input 
+            name="q" 
+            value="{{ app.request.query.get('q') }}" 
+            class="block w-full pl-10 pr-4 py-2.5 bg-[#122017] border border-[#29382f] rounded-lg text-white placeholder-[#5a7063] focus:border-primary focus:ring-1 focus:ring-primary text-sm transition-colors" 
+            placeholder="Rechercher une classe par nom..." 
+            type="text"
+        />
     </div>
-</section>
+</form>
+
+<!-- Filters -->
+<div class="flex gap-3 w-full md:w-auto">
+<div class="relative min-w-[160px] flex-1 md:flex-none">
+<form method="get">
+    <select name="niveau"
+            onchange="this.form.submit()"
+            class="appearance-none w-full bg-[#122017] text-white border border-[#29382f]
+                   rounded-lg py-2.5 pl-4 pr-10 text-sm cursor-pointer">
+
+        <option value="">Tous les niveaux</option>
+        <option value="6" {{ niveau == '6' ? 'selected' : '' }}>6ème</option>
+        <option value="5" {{ niveau == '5' ? 'selected' : '' }}>5ème</option>
+        <option value="4" {{ niveau == '4' ? 'selected' : '' }}>4ème</option>
+        <option value="3" {{ niveau == '3' ? 'selected' : '' }}>3ème</option>
+    </select>
+</form>
+
+
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#9eb7a8]">
+<span class="material-symbols-outlined text-sm">expand_more</span>
 </div>
-<!-- Right Column: Recent Activity -->
-<div class="space-y-6">
-    {% for note in dernieresNotes %}
-        <div class="flex gap-4 group">
+</div>
+<button class="flex items-center justify-center size-10 rounded-lg border border-[#29382f] text-[#9eb7a8] hover:text-white hover:border-white/20 bg-[#122017] transition-all" title="Vue Liste">
+<span class="material-symbols-outlined">format_list_bulleted</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-lg border border-primary text-primary bg-primary/10 transition-all" title="Vue Grille">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+</div>
+</div>
+<!-- Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-            {# Avatar simple avec initiales #}
-            <div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                {{ note.eleve.prenom|first }}{{ note.eleve.nom|first }}
-            </div>
+{% for relation in relations %}
+    {% set classe = relation.classe %}
+    {% set matiere = relation.matiere %}
 
-            <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                    <p class="text-sm font-bold text-white truncate">
-                        {{ note.eleve.prenom }} {{ note.eleve.nom }}
-                    </p>
+    <div class="bg-surface-dark rounded-xl p-5 border border-white/5
+                relative overflow-hidden group transition-all duration-300
+                hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10
+                flex flex-col h-full">
 
-                    {# Couleur selon la note #}
-                    {% set couleur =
-                        note.valeur >= 16 ? 'green' :
-                        note.valeur >= 10 ? 'yellow' :
-                        'red'
-                    %}
-
-                    <span class="text-xs font-bold text-{{ couleur }}-400 bg-{{ couleur }}-400/10 px-2 py-0.5 rounded">
-                        {{ note.valeur }}/20
-                    </span>
-                </div>
-
-                <p class="text-xs text-gray-400 truncate">
-                    {{ note.type }} — {{ note.matiere.libelle ?? note.matiere.nom }}
-                </p>
-
-                <p class="text-[10px] text-gray-600 mt-1">
-                    {{ note.dateNote|time_ago }}
-                </p>
-            </div>
+        <!-- Icône -->
+        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <span class="material-symbols-outlined text-6xl">school</span>
         </div>
 
-        {% if not loop.last %}
-            <hr class="border-white/5"/>
-        {% endif %}
-    {% else %}
-        <p class="text-gray-400 text-sm">
-            Aucune note saisie récemment.
-        </p>
-    {% endfor %}
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-4">
+            <div class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full
+                        text-xs font-bold uppercase tracking-wider">
+                {{ classe.nom }}
+            </div>
 
-    <button class="w-full py-2.5 rounded-full border border-white/10 text-gray-400 text-sm font-medium hover:bg-white/5 hover:text-white transition-colors mt-2">
-        Voir tout l'historique
-    </button>
+            <button class="text-gray-500 hover:text-white transition-colors">
+                <span class="material-symbols-outlined">more_horiz</span>
+            </button>
+        </div>
+
+        <!-- Titre -->
+        <h3 class="text-2xl font-bold text-white mb-1">
+            {{ matiere.libelle }}
+        </h3>
+
+        <!-- Infos -->
+        <p class="text-gray-400 text-sm mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">school</span>
+            Niveau :
+            <span class="text-white font-medium">{{ classe.niveau }}</span>
+        </p>
+
+        <!-- Footer toujours en bas -->
+        <div class="mt-auto flex items-center justify-between">
+            <div class="text-xs text-gray-500">
+                Année scolaire :
+                <span class="text-white font-medium">{{ relation.anneeScolaire }}</span>
+            </div>
+
+            <a href="{{ path('enseignant_gestion_classes') }}"
+               class="bg-primary text-black font-bold text-sm px-4 py-2
+                      rounded-full hover:bg-primary-dark transition-colors">
+                Gérer
+            </a>
+        </div>
+
+    </div>
+
+{% else %}
+    <p class="text-gray-400">Aucune classe trouvée.</p>
+{% endfor %}
+
+
+
 </div>
 
+<!-- Footer / Pagination -->
+
+{% set start = (page - 1) * limit + 1 %}
+{% set end = start + relations|length - 1 %}
+{% set totalPages = (total / limit)|round(0, 'ceil') %}
+
+<div class="flex items-center justify-between mt-4 pb-8">
+    <p class="text-sm text-[#9eb7a8]">
+        Affichage de
+        <span class="text-white font-bold">{{ start }}-{{ end }}</span>
+        sur
+        <span class="text-white font-bold">{{ total }}</span>
+        classes
+    </p>
+
+    <div class="flex gap-2">
+        <!-- Précédent -->
+        <a href="{{ path('enseignant_gestion_classes', { page: page - 1 }) }}"
+           class="px-4 py-2 rounded-lg bg-[#29382f] text-white text-sm font-medium
+                  hover:bg-primary hover:text-black transition-colors
+                  {{ page == 1 ? 'opacity-50 pointer-events-none' : '' }}">
+            Précédent
+        </a>
+
+        <!-- Suivant -->
+        <a href="{{ path('enseignant_gestion_classes', { page: page + 1 }) }}"
+           class="px-4 py-2 rounded-lg bg-[#29382f] text-white text-sm font-medium
+                  hover:bg-primary hover:text-black transition-colors
+                  {{ page == totalPages ? 'opacity-50 pointer-events-none' : '' }}">
+            Suivant
+        </a>
+    </div>
+</div>
+
+</div>
 </main>
+</div>
 </body></html>
+
